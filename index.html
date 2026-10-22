@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ubuntu Invest — App Prototype</title>
+  <link rel="stylesheet" href="css/base.css">
+</head>
+<body>
+
+  <!-- The phone frame: everything inside it is "the app" -->
+  <div class="phone">
+
+    <!-- One empty section per tab. Each screen's JS file fills its own section. -->
+    <main class="screens">
+      <section class="screen" id="home"></section>
+      <section class="screen" id="invest"></section>
+      <section class="screen" id="circle"></section>
+      <section class="screen" id="profile"></section>
+    </main>
+
+    <!-- Bottom tab bar. data-tab must match a section id above. -->
+    <nav class="tabbar" aria-label="Main">
+      <button class="tab" data-tab="home">Home</button>
+      <button class="tab" data-tab="invest">Invest</button>
+      <button class="tab" data-tab="circle">Our Circle</button>
+      <button class="tab" data-tab="profile">Profile</button>
+    </nav>
+
+  </div>
+
+  <!-- Screen files: one per area so we don't edit the same file -->
+  <script src="js/screens/home.js"></script>        <!-- colleague -->
+  <script src="js/screens/invest.js"></script>      <!-- you -->
+  <script src="js/screens/our-circle.js"></script>  <!-- you -->
+  <script src="js/screens/profile.js"></script>     <!-- colleague -->
+
+  <!-- Shared navigation: must load last, after all screens are defined -->
+  <script src="js/app.js"></script>
+</body>
+</html>
