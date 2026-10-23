@@ -15,7 +15,7 @@ Screens.circle = function (el) {
   const CIRCLE = {
     name: 'Kimironko Traders',
     savingsTotal: 50000, // ikimina cash rotation, never invested
-    nextPayout: 'Jean, 30 November',
+    nextPayoutDate: '30 November', // next ikimina payout goes to the signed-up user (sample)
     decision: 'Majority vote',
     decisionRule: 'At least 3 of the 5 members must agree before the pool invests.',
   };
@@ -29,7 +29,7 @@ Screens.circle = function (el) {
   // Same names as the website demo. `entry` = simulated price paid per unit.
   const MEMBERS = [
     { id: 'aline', name: 'Aline', putIn: 40000, entry: 950 },
-    { id: 'jean', name: 'Jean', putIn: 25000, entry: 1000 },
+    { id: 'jean', name: 'Jean', putIn: 25000, entry: 1000, isYou: true }, // the signed-up user
     { id: 'grace', name: 'Grace', putIn: 30000, entry: 1040 },
     { id: 'eric', name: 'Eric', putIn: 20000, entry: 980 },
     { id: 'divine', name: 'Divine', putIn: 35000, entry: 1010 },
@@ -39,6 +39,18 @@ Screens.circle = function (el) {
   });
 
   const BAR_SCALE = 50000; // RWF represented by a full-width bar
+
+  // The signed-up user's display name comes from the shared profile (js/data.js),
+  // so it always matches Home and Profile. Falls back to the sample name.
+  const you = MEMBERS.find((m) => m.isYou);
+  const syncYourName = () => {
+    if (window.SampleData) you.name = SampleData.firstName();
+  };
+  syncYourName();
+
+  // Wording that changes when the member is the person using the app
+  const possessive = (m) => (m.isYou ? 'Your' : `${m.name}'s`);
+  const putInBy = (m) => (m.isYou ? 'you put in' : `${m.name} put in`);
 
   // A 6-month simulated path from START_UNIT to `end`, with some realistic wobble
   function poolPath(seed, end, points = 126) {
@@ -96,7 +108,7 @@ Screens.circle = function (el) {
               <p class="pot-value num">${UI.rwf(CIRCLE.savingsTotal)}</p>
             </div>
             <p class="pot-note">Cash rotation, not invested. Market changes and pool withdrawals don't affect it.</p>
-            <p class="pot-meta">Next payout: ${UI.esc(CIRCLE.nextPayout)} (sample)</p>
+            <p class="pot-meta" data-next-payout></p>
           </div>
         </article>
 
@@ -150,6 +162,7 @@ Screens.circle = function (el) {
         </button>
         <p class="small muted" id="scenario-hint" data-scenario-hint></p>
         <button type="button" class="btn btn-secondary btn-block" data-action="reset">${UI.icon('refresh', { size: 18 })}Reset demo</button>
+        <p class="small muted" data-reset-note aria-hidden="true"></p>
       </section>
 
       <p class="screen-footnote">
@@ -162,11 +175,11 @@ Screens.circle = function (el) {
   function memberRow(m) {
     return `
       <li>
-        <button type="button" class="member" data-member="${m.id}">
-          <span class="avatar" aria-hidden="true">${UI.esc(m.name.charAt(0))}</span>
+        <button type="button" class="member${m.isYou ? ' is-you' : ''}" data-member="${m.id}">
+          <span class="avatar" aria-hidden="true" data-initial></span>
           <span class="member-body">
             <span class="member-top">
-              <span class="member-name">${UI.esc(m.name)}</span>
+              <span class="member-name"><span data-name></span>${m.isYou ? '<span class="you-tag">You</span>' : ''}</span>
               <span class="member-value num" data-value></span>
             </span>
             <span class="bar" aria-hidden="true" data-bar>
@@ -243,9 +256,14 @@ Screens.circle = function (el) {
       label: `Simulated pool performance over the last 6 months: ${total >= 0 ? 'up' : 'down'} ${Math.abs(total).toFixed(1)}%.`,
     });
 
+    syncYourName();
+    el.querySelector('[data-next-payout]').textContent = `Next payout: you (${you.name}), ${CIRCLE.nextPayoutDate} (sample)`;
+
     // Members
     MEMBERS.forEach((m) => {
       const row = el.querySelector(`[data-member="${m.id}"]`);
+      row.querySelector('[data-name]').textContent = m.name;
+      row.querySelector('[data-initial]').textContent = m.name.charAt(0).toUpperCase();
       const valueEl = row.querySelector('[data-value]');
       const memberValue = valueOf(m);
       const previous = shown.members[m.id];
@@ -284,7 +302,7 @@ Screens.circle = function (el) {
       result.hidden = false;
       result.innerHTML = `
         ${UI.icon('checkCircle', { size: 20 })}
-        <p><strong>${UI.esc(last.name)}'s withdrawal was requested (simulated).</strong>
+        <p><strong>${UI.esc(possessive(last))} withdrawal was requested (simulated).</strong>
         Payout ${UI.rwf(state.withdrawn[last.id].payout)}, typically 2–3 days, not guaranteed.
         ${others ? `The other ${others} ${others === 1 ? 'member\'s share is' : 'members\' shares are'} unchanged.` : ''}
         The ikimina savings are unchanged.</p>`;
@@ -320,11 +338,11 @@ Screens.circle = function (el) {
 
   // ---------- Member sheet and withdrawal flow ----------
   function openMember(m) {
-    const sheet = UI.openSheet({ title: `${m.name}'s invested share` });
+    const sheet = UI.openSheet({ title: `${possessive(m)} invested share` });
     let acknowledged = false;
 
     function overview() {
-      sheet.setTitle(`${m.name}'s invested share`);
+      sheet.setTitle(`${possessive(m)} invested share`);
       if (isWithdrawn(m)) {
         sheet.body.innerHTML = `
           <div class="notice">
@@ -350,7 +368,7 @@ Screens.circle = function (el) {
         </dl>
         <div class="notice">
           ${UI.icon('coins')}
-          <p>${UI.esc(m.name)}'s ikimina savings are separate and aren't part of this amount.</p>
+          <p>${UI.esc(possessive(m))} ikimina savings are separate and aren't part of this amount.</p>
         </div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-primary btn-block" data-step="warn">Simulate withdrawal</button>
@@ -362,7 +380,7 @@ Screens.circle = function (el) {
       const value = valueOf(m);
       const loss = value < m.putIn;
       const others = activeMembers().length - 1;
-      sheet.setTitle(`Withdraw ${m.name}'s share?`);
+      sheet.setTitle(m.isYou ? 'Withdraw your share?' : `Withdraw ${m.name}'s share?`);
       sheet.body.innerHTML = `
         <div class="payout">
           <span class="payout-label">Estimated payout (simulated)</span>
@@ -373,7 +391,7 @@ Screens.circle = function (el) {
           loss
             ? `<div class="notice notice-danger">
                 ${UI.icon('alert')}
-                <p><strong>This share is worth ${UI.rwf(m.putIn - value)} less than ${UI.esc(m.name)} put in.</strong> Withdrawing now would lock in that loss.</p>
+                <p><strong>This share is worth ${UI.rwf(m.putIn - value)} less than ${UI.esc(putInBy(m))}.</strong> Withdrawing now would lock in that loss.</p>
               </div>`
             : ''
         }
@@ -472,7 +490,7 @@ Screens.circle = function (el) {
     // without covering the bars.
     setTimeout(() => {
       UI.announce(
-        `${m.name}'s simulated withdrawal was requested. Payout ${UI.rwf(payout)}, typically 2 to 3 days, not guaranteed. ` +
+        `${possessive(m)} simulated withdrawal was requested. Payout ${UI.rwf(payout)}, typically 2 to 3 days, not guaranteed. ` +
           `Pool value is now ${UI.rwf(poolValue())}. ${others ? `The other ${others} members' shares are unchanged.` : ''}`
       );
     }, 900);
@@ -500,6 +518,9 @@ Screens.circle = function (el) {
     const button = event.target.closest('button');
     if (!button || !el.contains(button)) return;
 
+    const resetNote = el.querySelector('[data-reset-note]');
+    if (resetNote && button.dataset.action !== 'reset') resetNote.textContent = '';
+
     if (button.dataset.member) {
       openMember(byId(button.dataset.member));
     } else if (button.dataset.action === 'scenario') {
@@ -517,7 +538,9 @@ Screens.circle = function (el) {
       state.lastWithdrawal = null;
       state.barsRevealed = true;
       update();
-      UI.toast('Demo reset', { icon: 'refresh' });
+      const note = el.querySelector('[data-reset-note]');
+      note.textContent = 'Demo reset: everyone is back in the pool and the gain is showing.';
+      UI.announce(note.textContent);
     } else if (button.dataset.action === 'about') {
       aboutSheet();
     }
@@ -525,5 +548,6 @@ Screens.circle = function (el) {
 
   render();
   update({ animate: false });
+  if (window.SampleData) SampleData.onChange(() => update({ animate: false }));
   revealBarsWhenVisible();
 };
