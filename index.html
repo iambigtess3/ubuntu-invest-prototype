@@ -3,8 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ubuntu Invest — App Prototype</title>
+  <title>Ubuntu Invest - App Prototype</title>
+
+  <!-- Brand fonts: Bricolage Grotesque (headings) and IBM Plex Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+  <!-- Shared design foundation -->
   <link rel="stylesheet" href="css/base.css">
+
+  <!-- Screen styles: one file per area -->
+  <link rel="stylesheet" href="css/screens/invest.css">   <!-- you -->
+  <link rel="stylesheet" href="css/screens/circle.css">   <!-- you -->
 </head>
 <body>
 
@@ -19,15 +30,43 @@
       <section class="screen" id="profile"></section>
     </main>
 
-    <!-- Bottom tab bar. data-tab must match a section id above. -->
+    <!-- Bottom tab bar. data-tab must match a section id above. Icons are decorative; the labels name each tab. -->
     <nav class="tabbar" aria-label="Main">
-      <button class="tab" data-tab="home">Home</button>
-      <button class="tab" data-tab="invest">Invest</button>
-      <button class="tab" data-tab="circle">Our Circle</button>
-      <button class="tab" data-tab="profile">Profile</button>
+      <button class="tab" data-tab="home">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="tab" data-tab="invest">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
+        <span>Invest</span>
+      </button>
+      <button class="tab" data-tab="circle">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="5" r="2.2" fill="currentColor" stroke="none"/><circle cx="18.06" cy="15.5" r="2.2" fill="currentColor" stroke="none"/><circle cx="5.94" cy="15.5" r="2.2" fill="currentColor" stroke="none"/></svg>
+        <span>Our Circle</span>
+      </button>
+      <button class="tab" data-tab="profile">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <span>Profile</span>
+      </button>
     </nav>
 
+    <!-- Bottom sheets and toasts appear here, inside the phone frame -->
+    <div class="overlay-root" id="overlay-root"></div>
+    <div class="toast-region" id="toast-region"></div>
+
   </div>
+
+  <!-- Prototype disclaimer, always visible during demos -->
+  <p class="prototype-note">
+    Ubuntu Invest prototype. All prices, balances and returns are simulated sample data.
+    No real money, trades or accounts are involved, and the broker partnership is proposed.
+  </p>
+
+  <!-- Screen-reader announcements (filled by js/ui.js) -->
+  <div class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Shared helpers: must load before the screen files -->
+  <script src="js/ui.js"></script>
 
   <!-- Screen files: one per area so we don't edit the same file -->
   <script src="js/screens/home.js"></script>        <!-- colleague -->
