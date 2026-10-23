@@ -1,27 +1,31 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>App Prototype: Ubuntu Invest</title>
-
+ 
   <!-- Brand fonts: Bricolage Grotesque (headings) and IBM Plex Sans (body) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-
+ 
   <!-- Shared design foundation -->
   <link rel="stylesheet" href="css/base.css">
-
+ 
   <!-- Screen styles: one file per area -->
-  <link rel="stylesheet" href="css/screens/invest.css">   <!-- you -->
-  <link rel="stylesheet" href="css/screens/circle.css">   <!-- you -->
+  <link rel="stylesheet" href="css/screens/home.css">        <!-- @amtoha-prog -->
+  <link rel="stylesheet" href="css/screens/onboarding.css">  <!-- @amtoha-prog -->
+  <link rel="stylesheet" href="css/screens/invest.css">      <!-- @iambigtess3 -->
+  <link rel="stylesheet" href="css/screens/circle.css">      <!-- @iambigtess3 -->
+  <link rel="stylesheet" href="css/screens/profile.css">     <!-- @amtoha-prog -->
 </head>
 <body>
-
+ 
   <!-- The phone frame: everything inside it is "the app" -->
   <div class="phone">
-
+ 
     <!-- One empty section per tab. Each screen's JS file fills its own section. -->
     <main class="screens">
       <section class="screen" id="home"></section>
@@ -68,11 +72,17 @@
   <!-- Shared helpers: must load before the screen files -->
   <script src="js/ui.js"></script>
 
+ <!-- Shared helpers and sample data: must load before the screen files -->
+  <script src="js/ui.js"></script>
+  <script src="js/data.js"></script>
+ 
   <!-- Screen files: one per area so we don't edit the same file -->
-  <script src="js/screens/home.js"></script>        <!-- colleague -->
-  <script src="js/screens/invest.js"></script>      <!-- you -->
-  <script src="js/screens/our-circle.js"></script>  <!-- you -->
-  <script src="js/screens/profile.js"></script>     <!-- colleague -->
+  <script src="js/screens/home.js"></script>        
+  <script src="js/screens/invest.js"></script>      
+  <script src="js/screens/our-circle.js"></script>  
+  <script src="js/screens/history.js"></script>    
+  <script src="js/screens/profile.js"></script>    
+  <script src="js/screens/onboarding.js"></script>  
 
   <!-- Shared navigation: must load last, after all screens are defined -->
   <script src="js/app.js"></script>

@@ -7,18 +7,8 @@
 window.Screens = window.Screens || {};
 
 Screens.invest = function (el) {
-  // ---------- Sample data (simulated, not real or current market prices) ----------
-  const DAYS = 260; // about one year of trading days
-
-  const companies = [
-    { id: 'bk', name: 'Bank of Kigali', mark: 'BK', sector: 'Banking', price: 312, seed: 11, drift: 0.0006, vol: 0.012 },
-    { id: 'mtn', name: 'MTN Rwanda', mark: 'MTN', sector: 'Telecommunications', price: 248, seed: 23, drift: 0.0004, vol: 0.014 },
-    { id: 'bralirwa', name: 'Bralirwa', mark: 'BR', sector: 'Beverages', price: 186, seed: 37, drift: -0.0005, vol: 0.013 },
-    { id: 'im', name: 'I&M Bank Rwanda', mark: 'I&M', sector: 'Banking', price: 64, seed: 41, drift: 0.0002, vol: 0.011 },
-  ];
-  companies.forEach((c) => {
-    c.path = UI.simPath({ seed: c.seed, end: c.price, days: DAYS, drift: c.drift, vol: c.vol });
-  });
+  // ---------- Sample data (shared, from js/data.js; simulated, not real prices) ----------
+  const { companies, DAYS } = SampleData;
 
   const RANGES = {
     '1W': { points: 6, label: 'past week' },
@@ -32,9 +22,7 @@ Screens.invest = function (el) {
     selectedId: null,
     range: '1M', // portfolio chart
     detailRange: '1M', // company chart
-    balance: 120000, // sample cash available to invest
-    holdings: { bk: 120, mtn: 150 }, // sample shares owned
-    orders: [], // simulated orders placed this session
+    orders: [], // simulated orders placed this session (balance and holdings live in SampleData)
     listScroll: 0,
   };
 
@@ -47,7 +35,7 @@ Screens.invest = function (el) {
     const n = RANGES[range].points;
     const series = new Array(n).fill(0);
     companies.forEach((c) => {
-      const shares = state.holdings[c.id] || 0;
+      const shares = SampleData.holdings[c.id] || 0;
       if (!shares) return;
       c.path.slice(-n).forEach((price, i) => {
         series[i] += shares * price;
@@ -71,7 +59,7 @@ Screens.invest = function (el) {
     const change = pctChange(series);
     const changeAmount = value - series[0];
     const range = RANGES[state.range];
-    const owned = companies.filter((c) => state.holdings[c.id]).length;
+    const owned = companies.filter((c) => SampleData.holdings[c.id]).length;
     const chartLabel = hasHoldings
       ? `Simulated portfolio value ${change >= 0 ? 'rose' : 'fell'} ${Math.abs(change).toFixed(1)}% over the ${range.label}, from ${UI.rwf(series[0])} to ${UI.rwf(value)}.`
       : '';
@@ -106,7 +94,7 @@ Screens.invest = function (el) {
         <dl class="portfolio-foot">
           <div>
             <dt>Available to invest</dt>
-            <dd class="num">${UI.rwf(state.balance)}</dd>
+            <dd class="num">${UI.rwf(SampleData.balance)}</dd>
           </div>
           <div>
             <dt>Holdings</dt>
@@ -139,7 +127,7 @@ Screens.invest = function (el) {
     const today = ((c.path[DAYS - 1] - c.path[DAYS - 2]) / c.path[DAYS - 2]) * 100;
     const month = c.path.slice(-RANGES['1M'].points);
     const trend = month[month.length - 1] >= month[0] ? 'up' : 'down';
-    const shares = state.holdings[c.id] || 0;
+    const shares = SampleData.holdings[c.id] || 0;
     return `
       <li>
         <button type="button" class="stock" data-stock="${c.id}">
@@ -194,7 +182,7 @@ Screens.invest = function (el) {
     const series = c.path.slice(-range.points);
     const change = pctChange(series);
     const trend = change >= 0 ? 'up' : 'down';
-    const shares = state.holdings[c.id] || 0;
+    const shares = SampleData.holdings[c.id] || 0;
     const summary = `Simulated price ${change >= 0 ? 'rose' : 'fell'} ${Math.abs(change).toFixed(1)}% over the ${range.label}, from ${UI.rwf(series[0])} to ${UI.rwf(series[series.length - 1])}.`;
 
     el.innerHTML = `
@@ -264,7 +252,7 @@ Screens.invest = function (el) {
     function validate() {
       if (!amount) return 'Enter an amount to invest.';
       if (amount < c.price) return `Enter at least ${UI.rwf(c.price)} to buy one share.`;
-      if (amount > state.balance) return `That's more than your available sample balance of ${UI.rwf(state.balance)}.`;
+      if (amount > SampleData.balance) return `That's more than your available sample balance of ${UI.rwf(SampleData.balance)}.`;
       return '';
     }
 
@@ -287,7 +275,7 @@ Screens.invest = function (el) {
               value="${amount ? UI.groupDigits(amount) : ''}"
               aria-describedby="buy-hint${error ? ' buy-error' : ''}" ${error ? 'aria-invalid="true"' : ''}>
           </div>
-          <p class="hint" id="buy-hint">Available: ${UI.rwf(state.balance)} (sample balance)</p>
+          <p class="hint" id="buy-hint">Available: ${UI.rwf(SampleData.balance)} (sample balance)</p>
           ${error ? `<p class="error" id="buy-error" role="alert">${UI.icon('alert', { size: 16 })}<span>${error}</span></p>` : ''}
         </div>
         <div class="chips" role="group" aria-label="Quick amounts">
@@ -347,8 +335,8 @@ Screens.invest = function (el) {
       UI.announce('Placing simulated order');
       await UI.wait(1100);
 
-      state.balance -= cost;
-      state.holdings[c.id] = (state.holdings[c.id] || 0) + shares;
+      // Shared data: Home and Transaction history update automatically
+      SampleData.recordBuy({ companyId: c.id, shares, cost });
       state.orders.unshift({
         name: c.name,
         shares,
@@ -369,8 +357,8 @@ Screens.invest = function (el) {
           <p class="muted">You bought ${sharesLabel(shares)} of ${UI.esc(c.name)} for an estimated ${UI.rwf(cost)}.</p>
         </div>
         <dl class="summary">
-          <div><dt>Shares now held</dt><dd>${UI.groupDigits(state.holdings[c.id])}</dd></div>
-          <div><dt>Available to invest</dt><dd>${UI.rwf(state.balance)}</dd></div>
+          <div><dt>Shares now held</dt><dd>${UI.groupDigits(SampleData.holdings[c.id])}</dd></div>
+          <div><dt>Available to invest</dt><dd>${UI.rwf(SampleData.balance)}</dd></div>
         </dl>
         <div class="notice">
           ${UI.icon('info')}
