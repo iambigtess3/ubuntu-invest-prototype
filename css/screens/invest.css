@@ -286,3 +286,11 @@
   font-size: 14px;
   color: var(--muted);
 }
+
+/* ---------- Touch targets (polish pass) ----------
+   The shared .segmented and .chip controls are 40px tall; mobile guidance asks
+   for at least 44px. Raised here for Invest only, until the shared fix is agreed. */
+#invest .segmented button,
+.buy-sheet .chip {
+  min-height: 44px;
+}
