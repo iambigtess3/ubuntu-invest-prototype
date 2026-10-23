@@ -468,3 +468,28 @@
 .warn-list li > .icon {
   color: var(--muted);
 }
+
+/* ---------- The signed-up user in the member list (polish pass) ---------- */
+#circle .member-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#circle .you-tag {
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--navy);
+  font: 600 11.5px/1.5 var(--font-body);
+  color: #FFFFFF;
+}
+
+/* Your avatar is navy, so it's distinct from members with the same initial */
+#circle .member.is-you .avatar {
+  background: var(--navy);
+  color: #FFFFFF;
+}
+
+#circle [data-reset-note]:empty {
+  display: none;
+}
