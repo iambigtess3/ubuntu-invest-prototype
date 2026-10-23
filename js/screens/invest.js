@@ -241,6 +241,7 @@ Screens.invest = function (el) {
   // ---------- Buy flow (bottom sheet) ----------
   function openBuy(c) {
     const sheet = UI.openSheet({ title: `Buy ${c.name}` });
+    sheet.body.classList.add('buy-sheet'); // lets invest.css size the quick-amount chips
     let amount = 0;
     let acknowledged = false;
 
@@ -413,7 +414,9 @@ Screens.invest = function (el) {
       if (step === 'done') {
         sheet.close({ silent: true });
         render();
-        UI.toast(`Simulated order placed: ${c.name}`);
+        // No toast: it would cover the Back button. The success screen and the
+        // "Simulated orders" list already confirm the buy.
+        UI.announce(`Simulated order placed: ${c.name}`);
         const buy = el.querySelector('[data-action="buy"]');
         if (buy) buy.focus();
       }
