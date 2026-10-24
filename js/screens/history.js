@@ -12,19 +12,27 @@ window.Views = window.Views || {};
     deposit: 'wallet',
     'circle-invest': 'circle',
     'circle-savings': 'coins',
+    'circle-withdrawal': 'clock',
   };
 
-  // One transaction row. Money in is green with "+"; money out is plain with "−".
+  // One transaction row, in the shared list style. Money in is green with "+";
+  // money out is plain with "−" (spending isn't a loss). Pending payouts say so.
   Views.txRow = (tx, dateText) => {
     const incoming = tx.amount > 0;
+    const iconClass = tx.group === 'circle' ? ' is-circle' : tx.group === 'funds' ? ' is-funds' : '';
     return `
-      <li class="tx">
-        <span class="tx-icon tx-${tx.group}">${UI.icon(TYPE_ICON[tx.type] || 'info', { size: 20 })}</span>
-        <span class="tx-main">
-          <span class="tx-title">${UI.esc(tx.title)}</span>
-          <span class="tx-meta">${UI.esc(tx.detail)}, ${UI.esc(dateText)}</span>
-        </span>
-        <span class="tx-amount num ${incoming ? 'is-in' : ''}">${UI.signedRwf(tx.amount)}</span>
+      <li>
+        <div class="row tx">
+          <span class="row-icon${iconClass}">${UI.icon(TYPE_ICON[tx.type] || 'info', { size: 20 })}</span>
+          <span class="row-main">
+            <span class="row-title">${UI.esc(tx.title)}</span>
+            <span class="row-meta">${UI.esc(tx.detail)}, ${UI.esc(dateText)}</span>
+          </span>
+          <span class="row-end">
+            <span class="row-amount${incoming && !tx.pending ? ' is-in' : ''}">${UI.signedRwf(tx.amount)}</span>
+            ${tx.pending ? '<span class="tag tag-sim">Pending</span>' : ''}
+          </span>
+        </div>
       </li>`;
   };
 
@@ -56,7 +64,7 @@ window.Views = window.Views || {};
 
         <header>
           <h1 class="screen-title" tabindex="-1" data-history-title>Transaction history</h1>
-          <p class="screen-subtitle">Simulated transactions. No real money moved.</p>
+          <p class="screen-subtitle">Simulated transactions. No real money moved, and the list resets when the page reloads.</p>
         </header>
 
         <div class="segmented" role="group" aria-label="Filter transactions">
@@ -70,7 +78,7 @@ window.Views = window.Views || {};
                   (g) => `
               <section class="section" aria-label="${UI.esc(g.month)}">
                 <h2 class="tx-month">${UI.esc(g.month)}</h2>
-                <ul class="tx-list" role="list">
+                <ul class="list" role="list">
                   ${g.items.map((tx) => Views.txRow(tx, tx.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))).join('')}
                 </ul>
               </section>`
@@ -83,7 +91,6 @@ window.Views = window.Views || {};
               </div>`
         }
 
-        <p class="screen-footnote">Prototype only. These transactions are sample data and are cleared when the page reloads.</p>
       `;
     }
 

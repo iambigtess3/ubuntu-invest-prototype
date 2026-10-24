@@ -1,31 +1,27 @@
-/* Profile and Transaction history styles
-   .tx-list rows are also used by Home's "Recent activity". */
+/* Profile and Transaction history styles. Lists, rows and avatars come from
+   css/base.css; only what's specific to Profile lives here. */
 
 #profile .screen-title:focus {
   outline: none;
 }
 
-/* ---------- Profile card ---------- */
 #profile .profile-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-4);
 }
 
 #profile .profile-avatar {
-  display: grid;
-  place-items: center;
   width: 56px;
   height: 56px;
-  border-radius: 50%;
-  background: var(--navy);
-  font: 700 19px/1 var(--font-display);
-  color: #FFFFFF;
+  font-size: 19px;
 }
 
 #profile .profile-details {
   display: grid;
+  justify-items: start;
+  gap: 2px;
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -34,72 +30,8 @@
   font: 700 19px/1.25 var(--font-display);
 }
 
-#profile .profile-card .tag {
-  grid-column: 2;
-  justify-self: start;
-}
-
-/* ---------- Settings rows ---------- */
-#profile .settings-list {
-  display: grid;
-  margin: 0;
-  padding: var(--space-1) 0;
-  list-style: none;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
-}
-
-#profile .settings-list li + li .setting {
-  border-top: 1px solid var(--line);
-}
-
-#profile .setting {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  min-height: 60px;
-  padding: 10px var(--space-3) 10px var(--space-4);
-  border: 0;
-  background: none;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-#profile .setting:active {
-  background: var(--surface-sunken);
-}
-
-#profile .setting > .icon {
-  color: var(--line-strong);
-}
-
-#profile .setting-icon {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--info-tint);
-  color: var(--navy);
-}
-
-#profile .setting-main {
-  display: grid;
-  min-width: 0;
-}
-
-#profile .setting-title {
-  font-weight: 600;
-}
-
-#profile .setting-detail {
-  font-size: 13px;
-  color: var(--muted);
+#profile .profile-details .tag {
+  margin-top: 6px;
 }
 
 /* ---------- Transaction history ---------- */
@@ -111,88 +43,5 @@
 .tx-month {
   font: 600 14px/1.3 var(--font-body);
   letter-spacing: 0;
-  color: var(--muted);
-}
-
-.tx-list {
-  display: grid;
-  margin: 0;
-  padding: var(--space-1) var(--space-4);
-  list-style: none;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
-}
-
-.tx {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.tx:last-child {
-  border-bottom: 0;
-}
-
-.tx-icon {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--info-tint);
-  color: var(--navy);
-}
-
-.tx-icon.tx-circle {
-  background: var(--warn-tint);
-  color: var(--warn-ink);
-}
-
-.tx-icon.tx-funds {
-  background: var(--gain-tint);
-  color: var(--gain);
-}
-
-.tx-main {
-  display: grid;
-  min-width: 0;
-}
-
-.tx-title {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.tx-meta {
-  font-size: 12.5px;
-  color: var(--muted);
-}
-
-/* Money in: green with "+". Money out: plain ink with "−" (spending isn't a loss). */
-.tx-amount {
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.tx-amount.is-in {
-  color: var(--gain);
-}
-
-/* ---------- Settings sheets (render outside #profile) ---------- */
-.switch-list {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.switch-hint {
-  display: block;
-  font-size: 13px;
-  font-weight: 400;
   color: var(--muted);
 }
