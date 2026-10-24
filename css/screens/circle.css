@@ -1,31 +1,11 @@
-/* Our Circle screen styles
-
-#circle .screen-subtitle {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-}
+/* Our Circle screen styles. Lists, rows, avatars and the navy summary card
+   come from css/base.css; only what's specific to Our Circle lives here. */
 
 /* ---------- Two pots ---------- */
 #circle .savings-pot {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
-}
-
-#circle .pot-icon {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--warn-tint);
-  color: var(--warn-ink);
 }
 
 #circle .pot-body {
@@ -63,48 +43,17 @@
   font-weight: 500;
 }
 
-/* Invested pool (deep navy) */
+/* Invested pool (navy summary card) */
 #circle .pool {
   display: grid;
   gap: 10px;
 }
 
-#circle .pool-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-#circle .pool-label {
-  font: 500 15px/1.3 var(--font-body);
-  letter-spacing: 0;
-  color: var(--on-navy-muted);
-}
-
-#circle .pool-value {
-  font: 700 32px/1.05 var(--font-display);
-  letter-spacing: -0.02em;
-  color: #FFFFFF;
-}
-
-#circle .pool-change {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 8px;
-  margin-top: -2px;
-  font-size: 14px;
-  color: var(--on-navy-muted);
-}
-
-#circle .pool-chart {
+#circle .pool .hero-chart {
   height: 96px;
-  margin-top: 4px;
-  color: var(--orange);
 }
 
-#circle .pool-chart-caption {
+#circle .pool-caption {
   font-size: 12.5px;
   color: var(--on-navy-muted);
 }
@@ -165,54 +114,9 @@
   background: var(--ink);
 }
 
-#circle .member-list {
-  display: grid;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 #circle .member {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  padding: 14px var(--space-2) 14px 14px;
-  border: 0;
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: box-shadow var(--dur-fast), background-color 600ms;
-}
-
-#circle .member:hover {
-  box-shadow: var(--shadow-2);
-}
-
-#circle .member:active {
-  background: var(--surface-sunken);
-}
-
-#circle .member > .icon {
-  color: var(--line-strong);
-}
-
-#circle .avatar {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--info-tint);
-  font: 700 16px/1 var(--font-display);
-  color: var(--navy);
+  padding: 14px 0;
+  transition: background-color 600ms, box-shadow 600ms;
 }
 
 #circle .member-body {
@@ -230,16 +134,17 @@
 }
 
 #circle .member-name {
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-#circle .member-value {
-  font-weight: 600;
-}
-
-#circle .member-putin {
-  font-size: 13px;
-  color: var(--muted);
+#circle .you-tag {
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--navy);
+  font: 600 11.5px/1.5 var(--font-body);
+  color: #FFFFFF;
 }
 
 #circle .member-bottom .change {
@@ -319,13 +224,13 @@
   line-height: 1.4;
 }
 
-#circle .nowrap {
-  white-space: nowrap;
-}
-
 #circle .member-status .icon {
   flex: none;
   margin-top: 2px;
+}
+
+#circle .nowrap {
+  white-space: nowrap;
 }
 
 #circle .member.is-unchanged .member-status {
@@ -338,18 +243,20 @@
   color: var(--warn-ink);
 }
 
-#circle .member.is-withdrawn .avatar {
+#circle .member.is-withdrawn .avatar:not(.is-you) {
   background: var(--surface-sunken);
   color: var(--muted);
 }
 
-#circle .member.is-withdrawn .member-value {
+#circle .member.is-withdrawn [data-value] {
   color: var(--muted);
 }
 
-/* Brief highlight on the member who just withdrew */
+/* Brief highlight on the member who just withdrew (full card width) */
 #circle .member.is-flash {
   background: var(--warn-tint);
+  box-shadow: 0 0 0 var(--space-4) var(--warn-tint);
+  clip-path: inset(0 calc(-1 * var(--space-4)));
 }
 
 /* Summary banner after a withdrawal */
@@ -381,44 +288,6 @@
   }
 }
 
-/* ---------- Rules ---------- */
-#circle .rules {
-  display: grid;
-  gap: var(--space-3);
-}
-
-#circle .rule-list,
-.warn-list {
-  display: grid;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-#circle .rule-list li,
-.warn-list li {
-  display: flex;
-  gap: var(--space-3);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-#circle .rule-list li > .icon,
-.warn-list li > .icon {
-  flex: none;
-  margin-top: 1px;
-  color: var(--navy);
-}
-
-#circle .rule-list strong {
-  font-weight: 600;
-}
-
-#circle .rule-list p {
-  color: var(--muted);
-}
-
 /* ---------- Demo controls (presenter-only, visually set apart) ---------- */
 #circle .demo-controls {
   display: grid;
@@ -437,7 +306,11 @@
   margin-top: var(--space-1);
 }
 
-/* ---------- Withdrawal sheet (renders outside #circle) ---------- */
+#circle [data-reset-note]:empty {
+  display: none;
+}
+
+/* ---------- Sheets (render outside #circle) ---------- */
 .payout {
   display: grid;
   gap: 2px;
@@ -465,31 +338,27 @@
   color: var(--muted);
 }
 
+.warn-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.warn-list li {
+  display: flex;
+  gap: var(--space-3);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .warn-list li > .icon {
+  flex: none;
+  margin-top: 1px;
   color: var(--muted);
 }
 
-/* ---------- The signed-up user in the member list (polish pass) ---------- */
-#circle .member-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-#circle .you-tag {
-  padding: 1px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--navy);
-  font: 600 11.5px/1.5 var(--font-body);
-  color: #FFFFFF;
-}
-
-/* Your avatar is navy, so it's distinct from members with the same initial */
-#circle .member.is-you .avatar {
-  background: var(--navy);
-  color: #FFFFFF;
-}
-
-#circle [data-reset-note]:empty {
-  display: none;
+.warn-list strong {
+  font-weight: 600;
 }
