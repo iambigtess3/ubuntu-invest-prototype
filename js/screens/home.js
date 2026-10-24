@@ -1,7 +1,7 @@
 // Home tab
 //
-// Dashboard: total balance, holdings, a link into Our Circle and recent activity.
-// Reads js/data.js, so it always matches Invest. All figures are simulated.
+// Dashboard: total balance, holdings and recent activity. Reads js/data.js,
+// so it always matches Invest, Our Circle and history. All figures are simulated.
 
 window.Screens = window.Screens || {};
 
@@ -12,10 +12,12 @@ Screens.home = function (el) {
   const shortDate = (date) => date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
   function render() {
-    const investments = data.investmentsValue();
+    const shares = data.investmentsValue();
     const yesterday = data.investmentsValueYesterday();
-    const total = investments + data.balance;
-    const todayAmount = investments - yesterday;
+    const circleShare = data.yourCircleValue();
+    const pending = data.yourPendingPayout();
+    const total = shares + data.balance + circleShare + pending;
+    const todayAmount = shares - yesterday;
     const todayPct = yesterday ? (todayAmount / yesterday) * 100 : 0;
     const held = data.companies.filter((c) => data.holdings[c.id]);
     const recent = data.transactions.slice(0, 3);
@@ -29,58 +31,44 @@ Screens.home = function (el) {
       </header>
 
       <section class="card-hero on-navy home-balance" aria-labelledby="balance-title">
-        <div class="home-balance-top">
-          <h2 id="balance-title" class="home-balance-label">Total balance</h2>
+        <div class="hero-top">
+          <h2 id="balance-title" class="hero-label">Total balance</h2>
           <span class="tag tag-sim">Simulated</span>
         </div>
-        <p class="home-balance-value num">${UI.rwf(total)}</p>
-        <p class="home-balance-change">
+        <p class="hero-value">${UI.rwf(total)}</p>
+        <p class="hero-change">
           ${UI.change(todayPct)}
           <span class="num">${UI.signedRwf(todayAmount)}</span>
-          <span>today on investments</span>
+          <span>today on your shares</span>
         </p>
-        <dl class="home-split">
-          <div><dt>Investments</dt><dd class="num">${UI.rwf(investments)}</dd></div>
-          <div><dt>Available to invest</dt><dd class="num">${UI.rwf(data.balance)}</dd></div>
+        <dl class="hero-split">
+          <div><dt>Shares</dt><dd>${UI.rwf(shares)}</dd></div>
+          <div><dt>Our Circle</dt><dd>${pending ? `${UI.rwf(pending)} pending` : UI.rwf(circleShare)}</dd></div>
+          <div><dt>Cash to invest</dt><dd>${UI.rwf(data.balance)}</dd></div>
         </dl>
         <button type="button" class="btn btn-primary btn-block" data-action="invest">Invest now</button>
       </section>
 
       <section class="section" aria-labelledby="holdings-title">
-        <h2 id="holdings-title" class="section-title">Your holdings</h2>
+        <h2 id="holdings-title" class="section-title">Your shares</h2>
         ${
           held.length
-            ? `<ul class="holding-list" role="list">
-                ${held.map(holdingRow).join('')}
-              </ul>`
+            ? `<ul class="list" role="list">${held.map(holdingRow).join('')}</ul>`
             : `<div class="empty">
                 ${UI.icon('invest', { size: 28 })}
-                <strong>No holdings yet</strong>
+                <strong>No shares yet</strong>
                 <span>Buy your first shares from the Invest tab.</span>
               </div>`
         }
       </section>
 
-      <section class="card home-circle" aria-labelledby="home-circle-title">
-        <span class="home-circle-icon">${UI.icon('circle', { size: 24 })}</span>
-        <div class="home-circle-body">
-          <h2 id="home-circle-title" class="home-circle-title">Our Circle</h2>
-          <p class="small muted">Kimironko Traders, 5 members. Savings and the invested pool are kept separate.</p>
-        </div>
-        <button type="button" class="btn btn-secondary btn-block" data-action="circle">Open Our Circle</button>
-      </section>
-
       <section class="section" aria-labelledby="activity-title">
         <h2 id="activity-title" class="section-title">Recent activity</h2>
-        <ul class="tx-list" role="list">
+        <ul class="list" role="list">
           ${recent.map((tx) => Views.txRow(tx, shortDate(tx.date))).join('')}
         </ul>
         <button type="button" class="btn btn-quiet btn-block" data-action="history">See all activity</button>
       </section>
-
-      <p class="screen-footnote">
-        Prototype only. Balances, holdings and activity are simulated. No real money, trades or accounts are involved.
-      </p>
     `;
   }
 
@@ -88,17 +76,19 @@ Screens.home = function (el) {
     const shares = data.holdings[c.id];
     const today = ((c.path[data.DAYS - 1] - c.path[data.DAYS - 2]) / c.path[data.DAYS - 2]) * 100;
     return `
-      <li class="holding">
-        <span class="holding-mark" aria-hidden="true">${UI.esc(c.mark)}</span>
-        <span class="holding-main">
-          <span class="holding-name">${UI.esc(c.name)}</span>
-          <span class="holding-meta">${sharesLabel(shares)}</span>
-        </span>
-        <span class="holding-value">
-          <span class="num">${UI.rwf(shares * c.price)}</span>
-          ${UI.change(today)}
-          <span class="sr-only">today, simulated</span>
-        </span>
+      <li>
+        <button type="button" class="row" data-company="${c.id}">
+          <span class="mark" aria-hidden="true">${UI.esc(c.mark)}</span>
+          <span class="row-main">
+            <span class="row-title">${UI.esc(c.name)}</span>
+            <span class="row-meta">${sharesLabel(shares)}</span>
+          </span>
+          <span class="row-end">
+            <span class="row-amount">${UI.rwf(shares * c.price)}</span>
+            ${UI.change(today)}
+            <span class="sr-only">today, simulated</span>
+          </span>
+        </button>
       </li>`;
   }
 
@@ -106,14 +96,17 @@ Screens.home = function (el) {
     const button = event.target.closest('button');
     if (!button || !el.contains(button)) return;
     if (button.dataset.action === 'invest') goToTab('invest');
-    if (button.dataset.action === 'circle') goToTab('circle');
+    if (button.dataset.company) {
+      goToTab('invest');
+      if (window.InvestScreen) window.InvestScreen.openCompany(button.dataset.company);
+    }
     if (button.dataset.action === 'history') {
       goToTab('profile');
       if (window.ProfileScreen) window.ProfileScreen.openHistory();
     }
   });
 
-  // Re-render when another screen changes the shared data (e.g. a buy in Invest)
+  // Re-render when any screen changes the shared data (a buy, a withdrawal, a reset)
   data.onChange(render);
   render();
 };
