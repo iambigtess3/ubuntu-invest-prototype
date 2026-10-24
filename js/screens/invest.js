@@ -1,7 +1,7 @@
 // Invest tab
 //
 // Everything on this screen is simulated sample data: prices, balances,
-// holdings and orders. No real market prices, money or trades.
+// holdings and orders (all from js/data.js). No real market prices, money or trades.
 // Views: "list" (portfolio + companies) and "detail" (one company + buy sheet).
 
 window.Screens = window.Screens || {};
@@ -22,7 +22,6 @@ Screens.invest = function (el) {
     selectedId: null,
     range: '1M', // portfolio chart
     detailRange: '1M', // company chart
-    orders: [], // simulated orders placed this session (balance and holdings live in SampleData)
     listScroll: 0,
   };
 
@@ -59,67 +58,49 @@ Screens.invest = function (el) {
     const change = pctChange(series);
     const changeAmount = value - series[0];
     const range = RANGES[state.range];
-    const owned = companies.filter((c) => SampleData.holdings[c.id]).length;
     const chartLabel = hasHoldings
-      ? `Simulated portfolio value ${change >= 0 ? 'rose' : 'fell'} ${Math.abs(change).toFixed(1)}% over the ${range.label}, from ${UI.rwf(series[0])} to ${UI.rwf(value)}.`
+      ? `Simulated value of your shares ${change >= 0 ? 'rose' : 'fell'} ${Math.abs(change).toFixed(1)}% over the ${range.label}, from ${UI.rwf(series[0])} to ${UI.rwf(value)}.`
       : '';
 
     el.innerHTML = `
       <header class="screen-head">
         <div>
           <h1 class="screen-title">Invest</h1>
-          <p class="screen-subtitle">Rwanda Stock Exchange, simulated</p>
+          <p class="screen-subtitle">Companies on the Rwanda Stock Exchange</p>
         </div>
       </header>
 
       <section class="card-hero on-navy portfolio" aria-labelledby="portfolio-title">
-        <div class="portfolio-top">
-          <h2 id="portfolio-title" class="portfolio-label">Your portfolio</h2>
+        <div class="hero-top">
+          <h2 id="portfolio-title" class="hero-label">Your shares</h2>
           <span class="tag tag-sim">Simulated</span>
         </div>
-        <p class="portfolio-value num">${UI.rwf(value)}</p>
-        <p class="portfolio-change">
+        <p class="hero-value">${UI.rwf(value)}</p>
+        <p class="hero-change">
           ${UI.change(change)}
           <span class="num">${UI.signedRwf(changeAmount)}</span>
           <span>${range.label}</span>
         </p>
-        <div class="portfolio-chart">
-          ${hasHoldings ? UI.lineChart(series, { width: 320, height: 110, area: true, label: chartLabel }) : ''}
+        <div class="hero-chart">
+          ${hasHoldings ? UI.lineChart(series, { width: 320, height: 104, area: true, label: chartLabel }) : ''}
         </div>
-        <div class="segmented" role="group" aria-label="Portfolio chart range">
+        <div class="segmented" role="group" aria-label="Chart range">
           ${Object.keys(RANGES)
             .map((r) => `<button type="button" data-range="${r}" aria-pressed="${r === state.range}">${r}</button>`)
             .join('')}
         </div>
-        <dl class="portfolio-foot">
-          <div>
-            <dt>Available to invest</dt>
-            <dd class="num">${UI.rwf(SampleData.balance)}</dd>
-          </div>
-          <div>
-            <dt>Holdings</dt>
-            <dd class="num">${owned} ${owned === 1 ? 'company' : 'companies'}</dd>
-          </div>
+        <dl class="hero-split">
+          <div><dt>Available to invest</dt><dd>${UI.rwf(SampleData.balance)}</dd></div>
         </dl>
       </section>
 
       <section class="section" aria-labelledby="market-title">
         <h2 id="market-title" class="section-title">Companies</h2>
-        <p class="section-intro">Prices are simulated for this prototype. They are not real or current market prices.</p>
-        <ul class="stock-list" role="list">
+        <p class="section-intro">Prices are simulated for this prototype, not real or current market prices. Tap a company to see more or buy.</p>
+        <ul class="list" role="list">
           ${companies.map(stockRow).join('')}
         </ul>
       </section>
-
-      <section class="section" aria-labelledby="orders-title">
-        <h2 id="orders-title" class="section-title">Simulated orders</h2>
-        ${state.orders.length ? ordersList() : emptyOrders()}
-      </section>
-
-      <p class="screen-footnote">
-        Prototype only. Nothing on this screen is a real investment, price, balance or trade.
-        Orders would be placed through a proposed licensed broker partner. Fees are to be confirmed with that partner.
-      </p>
     `;
   }
 
@@ -130,50 +111,22 @@ Screens.invest = function (el) {
     const shares = SampleData.holdings[c.id] || 0;
     return `
       <li>
-        <button type="button" class="stock" data-stock="${c.id}">
-          <span class="stock-mark" aria-hidden="true">${UI.esc(c.mark)}</span>
-          <span class="stock-main">
-            <span class="stock-name">${UI.esc(c.name)}</span>
-            <span class="stock-meta">${shares ? `You own ${sharesLabel(shares)}` : UI.esc(c.sector)}</span>
+        <button type="button" class="row stock" data-stock="${c.id}">
+          <span class="mark" aria-hidden="true">${UI.esc(c.mark)}</span>
+          <span class="row-main">
+            <span class="row-title">${UI.esc(c.name)}</span>
+            <span class="row-meta">${shares ? `You own ${sharesLabel(shares)}` : UI.esc(c.sector)}</span>
           </span>
           <span class="stock-spark ${trend}" aria-hidden="true">
             ${UI.lineChart(month, { width: 64, height: 28, strokeWidth: 1.75, padding: 3 })}
           </span>
-          <span class="stock-price">
-            <span class="num stock-price-value">${UI.rwf(c.price)}</span>
+          <span class="row-end">
+            <span class="row-amount">${UI.rwf(c.price)}</span>
             ${UI.change(today)}
             <span class="sr-only">today, simulated price</span>
           </span>
         </button>
       </li>`;
-  }
-
-  function ordersList() {
-    return `
-      <ul class="order-list" role="list">
-        ${state.orders
-          .map(
-            (o) => `
-          <li class="order">
-            <span class="order-icon">${UI.icon('checkCircle')}</span>
-            <span class="order-main">
-              <span class="order-title">Bought ${sharesLabel(o.shares)} of ${UI.esc(o.name)}</span>
-              <span class="order-meta">Simulated order at ${o.time}</span>
-            </span>
-            <span class="order-amount num">${UI.rwf(o.cost)}</span>
-          </li>`
-          )
-          .join('')}
-      </ul>`;
-  }
-
-  function emptyOrders() {
-    return `
-      <div class="empty">
-        ${UI.icon('invest', { size: 28 })}
-        <strong>No simulated orders yet</strong>
-        <span>Choose a company above to try the buy flow.</span>
-      </div>`;
   }
 
   function renderDetail() {
@@ -189,7 +142,7 @@ Screens.invest = function (el) {
       <button type="button" class="back-btn" data-action="back">${UI.icon('chevronLeft', { size: 22 })}<span>Invest</span></button>
 
       <header class="detail-head">
-        <span class="stock-mark stock-mark-lg" aria-hidden="true">${UI.esc(c.mark)}</span>
+        <span class="mark mark-lg" aria-hidden="true">${UI.esc(c.mark)}</span>
         <div>
           <h1 class="detail-title" tabindex="-1">${UI.esc(c.name)}</h1>
           <p class="small muted">${UI.esc(c.sector)}. Listed on the Rwanda Stock Exchange.</p>
@@ -241,7 +194,6 @@ Screens.invest = function (el) {
   // ---------- Buy flow (bottom sheet) ----------
   function openBuy(c) {
     const sheet = UI.openSheet({ title: `Buy ${c.name}` });
-    sheet.body.classList.add('buy-sheet'); // lets invest.css size the quick-amount chips
     let amount = 0;
     let acknowledged = false;
 
@@ -338,12 +290,6 @@ Screens.invest = function (el) {
 
       // Shared data: Home and Transaction history update automatically
       SampleData.recordBuy({ companyId: c.id, shares, cost });
-      state.orders.unshift({
-        name: c.name,
-        shares,
-        cost,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      });
 
       sheet.unlock();
       stepSuccess(shares, cost);
@@ -363,7 +309,7 @@ Screens.invest = function (el) {
         </dl>
         <div class="notice">
           ${UI.icon('info')}
-          <p>No real trade was made. In the live product, orders would go through the proposed licensed broker partner and could take time to complete.</p>
+          <p>No real trade was made. You'll find this order in your transaction history (Profile).</p>
         </div>
         <button type="button" class="btn btn-primary btn-block" data-step="done">Done</button>
       `;
@@ -415,7 +361,7 @@ Screens.invest = function (el) {
         sheet.close({ silent: true });
         render();
         // No toast: it would cover the Back button. The success screen and the
-        // "Simulated orders" list already confirm the buy.
+        // transaction history already confirm the buy.
         UI.announce(`Simulated order placed: ${c.name}`);
         const buy = el.querySelector('[data-action="buy"]');
         if (buy) buy.focus();
@@ -456,6 +402,34 @@ Screens.invest = function (el) {
     } else if (button.dataset.action === 'buy') {
       openBuy(byId(state.selectedId));
     }
+  });
+
+  // Lets Home open a company directly from "Your shares"
+  window.InvestScreen = {
+    openCompany(id) {
+      state.listScroll = 0;
+      state.selectedId = id;
+      state.detailRange = '1M';
+      state.view = 'detail';
+      render();
+      scroller().scrollTop = 0;
+      el.querySelector('.detail-title').focus();
+    },
+  };
+
+  // Tapping the Invest tab again goes back to the company list
+  el.addEventListener('tabreselect', () => {
+    if (state.view === 'list') return;
+    state.view = 'list';
+    render();
+  });
+
+  // A full demo reset (Profile) puts Invest back on its list view
+  SampleData.onChange((kind) => {
+    if (kind !== 'reset') return;
+    state.view = 'list';
+    state.range = '1M';
+    render();
   });
 
   render();
