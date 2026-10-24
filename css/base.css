@@ -1,6 +1,5 @@
 /* =============================================================
    Ubuntu Invest prototype: shared design foundation
-   Shared file: agree with each other before changing it.
 
    1. Tokens   2. Page and phone frame   3. Tab bar
    4. Screen layout and type   5. Components   6. Overlays
@@ -693,7 +692,7 @@ p {
 }
 
 .chip {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 14px;
   border: 1.5px solid var(--line);
   border-radius: var(--radius-pill);
@@ -747,7 +746,7 @@ p {
 
 .segmented button {
   flex: 1;
-  min-height: 40px;
+  min-height: 44px;
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
@@ -843,6 +842,194 @@ p {
 .chart-area {
   fill: currentColor;
   opacity: 0.12;
+}
+
+/* ---------- Shared list: one card with divided rows (holdings, companies,
+   members, transactions, settings). Every screen uses this, so lists look the same. ---------- */
+.list {
+  display: grid;
+  margin: 0;
+  padding: 0 var(--space-4);
+  list-style: none;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.list > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-3) 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+button.row {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tapped row: tint the full card width, not just the content */
+button.row:active {
+  background: var(--surface-sunken);
+  box-shadow: 0 0 0 var(--space-4) var(--surface-sunken);
+  clip-path: inset(0 calc(-1 * var(--space-4)));
+}
+
+.row-main {
+  display: grid;
+  min-width: 0;
+}
+
+.row-title {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.row-meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.row-end {
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+  font-size: 13.5px;
+}
+
+.row-amount {
+  font-size: 14.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.row-amount.is-in {
+  color: var(--gain);
+}
+
+.row-chevron {
+  color: var(--line-strong);
+}
+
+/* Company "logo" tile (initials, no real logos) and people avatars */
+.mark,
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  background: var(--info-tint);
+  color: var(--navy);
+}
+
+.mark {
+  border-radius: 10px;
+  font: 700 11.5px/1 var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+.avatar {
+  border-radius: 50%;
+  font: 700 16px/1 var(--font-display);
+}
+
+.avatar.is-you {
+  background: var(--navy);
+  color: #FFFFFF;
+}
+
+/* Round icon used at the start of transaction and settings rows */
+.row-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--info-tint);
+  color: var(--navy);
+}
+
+.row-icon.is-circle {
+  background: var(--warn-tint);
+  color: var(--warn-ink);
+}
+
+.row-icon.is-funds {
+  background: var(--gain-tint);
+  color: var(--gain);
+}
+
+/* Big number inside the navy summary cards (Home, Invest, Our Circle) */
+.hero-label {
+  font: 500 14px/1.3 var(--font-body);
+  letter-spacing: 0;
+  color: var(--on-navy-muted);
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.hero-value {
+  font: 700 34px/1.05 var(--font-display);
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  margin-top: -4px;
+  font-size: 14px;
+  color: var(--on-navy-muted);
+}
+
+.hero-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--space-3);
+  margin: 2px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hero-split dt {
+  font-size: 12.5px;
+  color: var(--on-navy-muted);
+}
+
+.hero-split dd {
+  margin: 2px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-chart {
+  height: 104px;
+  margin: 2px -2px 0;
+  color: var(--orange);
 }
 
 /* Empty state */
@@ -1048,6 +1235,47 @@ p {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ---------- On a real phone: drop the device frame and fill the screen ---------- */
+@media (max-width: 500px) {
+  body {
+    padding: 0;
+    gap: 0;
+    align-content: start;
+  }
+
+  .phone {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .phone::before,
+  .tabbar::after {
+    display: none;
+  }
+
+  .tabbar {
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .toast-region {
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+  }
+
+  .prototype-note {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .screen {
+    padding-top: var(--space-5);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

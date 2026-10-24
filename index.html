@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="en">
-
+ 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>App Prototype: Ubuntu Invest</title>
  
-  <!-- Brand fonts: Bricolage Grotesque (headings) and IBM Plex Sans (body) -->
+  <!-- Brand fonts from Google Fonts: Bricolage Grotesque (headings) and IBM Plex Sans (body).
+       Needs an internet connection; without one, the app falls back to the system font. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -33,7 +34,7 @@
       <section class="screen" id="circle"></section>
       <section class="screen" id="profile"></section>
     </main>
-
+ 
     <!-- Bottom tab bar. data-tab must match a section id above. Icons are decorative; the labels name each tab. -->
     <nav class="tabbar" aria-label="Main">
       <button class="tab" data-tab="home">
@@ -53,25 +54,25 @@
         <span>Profile</span>
       </button>
     </nav>
-
+ 
     <!-- Bottom sheets and toasts appear here, inside the phone frame -->
     <div class="overlay-root" id="overlay-root"></div>
     <div class="toast-region" id="toast-region"></div>
-
+ 
   </div>
-
+ 
   <!-- Prototype disclaimer, always visible during demos -->
   <p class="prototype-note">
     Ubuntu Invest prototype. All prices, balances and returns are simulated sample data.
     No real money, trades or accounts are involved, and the broker partnership is proposed.
   </p>
-
+ 
   <!-- Screen-reader announcements (filled by js/ui.js) -->
   <div class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></div>
-
+ 
   <!-- Shared helpers: must load before the screen files -->
   <script src="js/ui.js"></script>
-
+ 
  <!-- Shared helpers and sample data: must load before the screen files -->
   <script src="js/ui.js"></script>
   <script src="js/data.js"></script>
@@ -83,8 +84,9 @@
   <script src="js/screens/history.js"></script>    
   <script src="js/screens/profile.js"></script>    
   <script src="js/screens/onboarding.js"></script>  
-
+ 
   <!-- Shared navigation: must load last, after all screens are defined -->
   <script src="js/app.js"></script>
 </body>
 </html>
+ 
