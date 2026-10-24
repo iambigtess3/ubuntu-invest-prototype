@@ -161,3 +161,10 @@
   justify-self: stretch;
   text-align: left;
 }
+
+/* On a real phone the status-bar area comes from the device, not the frame */
+@media (max-width: 500px) {
+  .onboarding {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
