@@ -514,10 +514,6 @@
 }
 
 /* ---------- Design C ---------- */
-#circle .circle-banner {
-  aspect-ratio: 16 / 11;
-}
-
 #circle .circle-name {
   display: flex;
   flex-wrap: wrap;
@@ -539,4 +535,10 @@
 /* Pending withdrawal sheet heading */
 .sheet .result-title {
   text-align: center;
+}
+
+/* "Your share" card: your initials avatar, centred in the same column */
+#circle .your-share-art {
+  display: grid;
+  place-items: center;
 }

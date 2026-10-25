@@ -45,12 +45,13 @@
   // Our Circle sample group. Each member bought pool "units" at a different
   // simulated price (`entry`), so every share is tracked separately.
   // The "jean" slot is the person using the app (named from their profile).
+  // `name` is shown in lists; `fullName` is only used for avatar initials.
   const circleMembers = [
-    { id: 'aline', name: 'Aline', putIn: 40000, entry: 950 },
-    { id: 'jean', name: 'Jean', putIn: 25000, entry: 1000, isYou: true },
-    { id: 'grace', name: 'Grace', putIn: 30000, entry: 1040 },
-    { id: 'eric', name: 'Eric', putIn: 20000, entry: 980 },
-    { id: 'divine', name: 'Divine', putIn: 35000, entry: 1010 },
+    { id: 'aline', name: 'Aline', fullName: 'Aline Mukeshimana', putIn: 40000, entry: 950 },
+    { id: 'jean', name: 'Jean', fullName: 'Jean Mugisha', putIn: 25000, entry: 1000, isYou: true },
+    { id: 'grace', name: 'Grace', fullName: 'Grace Mukamana', putIn: 30000, entry: 1040 },
+    { id: 'eric', name: 'Eric', fullName: 'Eric Habimana', putIn: 20000, entry: 980 },
+    { id: 'divine', name: 'Divine', fullName: 'Divine Iradukunda', putIn: 35000, entry: 1010 },
   ];
   circleMembers.forEach((m) => {
     m.units = m.putIn / m.entry;
@@ -119,6 +120,7 @@
     yourCircleMember() {
       const you = circleMembers.find((m) => m.isYou);
       you.name = data.firstName(); // always matches the profile
+      you.fullName = data.user.fullName;
       return you;
     },
     // Your share still invested in the pool, and any payout you've requested

@@ -30,7 +30,7 @@ Screens.profile = function (el) {
       </header>
 
       <section class="profile-head" aria-label="${UI.esc(u.fullName)}">
-        ${UI.avatar('you', { you: true, size: 88 })}
+        ${UI.avatar(u.fullName, { you: true, size: 88 })}
         <p class="profile-name">${UI.esc(u.fullName)}</p>
         <p class="small muted">${UI.esc(u.phone)} · ${UI.esc(u.email)}</p>
         <span class="tag tag-sim">${t('profile.sample')}</span>

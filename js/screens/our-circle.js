@@ -87,7 +87,7 @@ Screens.circle = function (el) {
 
       <div class="circle-panel" data-panel="overview" ${state.tab === 'overview' ? '' : 'hidden'}>
         <button type="button" class="card your-share" data-member="${MEMBERS.find((m) => m.isYou).id}">
-          <span class="your-share-art">${UI.peopleArt('pair')}</span>
+          <span class="your-share-art" data-your-avatar></span>
           <span class="your-share-text">
             <span class="your-share-label">${t('circle.yourShare')}</span>
             <span class="your-share-value num" data-your-value></span>
@@ -233,6 +233,7 @@ Screens.circle = function (el) {
     const yourValue = data.yourCircleValue();
     const yourPending = data.yourPendingPayout();
     el.querySelector('[data-your-value]').textContent = UI.rwf(yourPending || yourValue);
+    el.querySelector('[data-your-avatar]').innerHTML = UI.avatar(data.user.fullName, { you: true, size: 52 });
     el.querySelector('[data-your-meta]').innerHTML = yourPending
       ? `<span class="tag tag-sim">${t('common.pending')}</span>`
       : `${t('home.ofPool', { pct: UI.pct(value ? (yourValue / value) * 100 : 0, 0).replace('+', '') })}`;
@@ -273,9 +274,9 @@ Screens.circle = function (el) {
       const row = el.querySelector(`.member[data-member="${m.id}"]`);
       row.querySelector('span[data-name]').textContent = m.name;
       const avatar = row.querySelector('[data-avatar]');
-      if (avatar.dataset.avatarFor !== m.name) {
-        avatar.dataset.avatarFor = m.name; // remembers who is drawn, so it's only redrawn when the name changes
-        avatar.innerHTML = UI.avatar(m.isYou ? 'you' : m.name, { you: m.isYou, size: 44 });
+      if (avatar.dataset.avatarFor !== m.fullName) {
+        avatar.dataset.avatarFor = m.fullName; // only redrawn when the name changes
+        avatar.innerHTML = UI.avatar(m.fullName, { you: m.isYou, size: 44 });
       }
 
       const valueEl = row.querySelector('[data-value]');

@@ -96,12 +96,12 @@
   text-align: center;
 }
 
-#profile .profile-head .avatar-art {
+#profile .profile-head .avatar {
   margin-bottom: var(--space-2);
 }
 
 #profile .profile-name {
-  font: 800 21px/1.2 var(--font-display);
+  font: 700 21px/1.2 var(--font-display);
   color: var(--navy);
 }
 
