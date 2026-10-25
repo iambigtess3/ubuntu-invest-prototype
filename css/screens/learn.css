@@ -1,0 +1,28 @@
+/* Learn screen styles. Lists, tiles, filter chips and illustrations come
+   from css/base.css. */
+
+#learn .guide {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+
+#learn .guide .row-chevron {
+  align-self: center;
+}
+
+.guide-meta {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--green-strong);
+}
+
+/* Guide text in its sheet */
+.guide-body {
+  display: grid;
+  gap: var(--space-3);
+  font-size: 15px;
+  line-height: 1.6;
+}
