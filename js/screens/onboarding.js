@@ -7,57 +7,73 @@
   const phone = document.querySelector('.phone');
   let layer = null;
   let form = { fullName: '', phone: '', email: '' };
+  const t = (key, vars) => I18N.t(key, vars);
+  let current = () => {}; // the step on screen, redrawn if the language changes
+
+
 
   const background = () =>
     [document.querySelector('.screens'), document.querySelector('.tabbar'), document.getElementById('overlay-root')].filter(Boolean);
 
-  // Brand motif from the website: members in a ring around a shared core
-  function ringArt() {
-    const dots = Array.from({ length: 12 }, (_, i) => {
-      const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-      const big = i % 3 === 0;
-      return `<circle cx="${(100 + Math.cos(a) * 70).toFixed(1)}" cy="${(100 + Math.sin(a) * 70).toFixed(1)}" r="${big ? 9 : 6}" fill="${big ? '#1F8A5B' : '#6E9BCB'}"/>`;
-    }).join('');
-    return `
-      <svg class="ob-art" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
-        <circle cx="100" cy="100" r="70" fill="none" stroke="#E2802A" stroke-width="2" opacity="0.7"/>
-        ${dots}
-        <circle cx="100" cy="100" r="22" fill="#E2802A"/>
-      </svg>`;
-  }
+
 
   // ---------- Steps ----------
   function stepWelcome() {
+    current = stepWelcome;
     layer.innerHTML = `
-      <div class="ob-hero">
-        ${ringArt()}
-      </div>
-      <div class="ob-content">
-        <h1 class="ob-title" tabindex="-1">Ubuntu Invest</h1>
-        <p class="ob-lede">Invest in the Rwanda Stock Exchange from your phone, on your own or together with your ikimina.</p>
-        <ul class="ob-points" role="list">
-          <li>${UI.icon('invest')}<span>Buy shares in companies listed on the Rwanda Stock Exchange</span></li>
-          <li>${UI.icon('circle')}<span>Invest as a group with Our Circle, with your own share tracked separately</span></li>
-          <li>${UI.icon('alert')}<span>Clear about risk: investments can lose value</span></li>
-        </ul>
+      <div class="ob-welcome">
+        <div class="ob-brand">${UI.logo({ size: 36 })}</div>
+        <h1 class="ob-title" tabindex="-1">${t('ob.headline')}</h1>
+        <p class="ob-lede">${t('ob.lede')}</p>
+        <div class="ob-scene">${UI.peopleArt('welcome')}</div>
         <div class="ob-actions">
-          <button type="button" class="btn btn-primary btn-block" data-ob="signup">Create account</button>
-          <button type="button" class="btn btn-quiet btn-block" data-ob="skip">Skip to the app</button>
+          <button type="button" class="btn btn-primary btn-block" data-ob="start">${t('ob.getStarted')}${UI.icon('chevronRight', { size: 20 })}</button>
+          <button type="button" class="btn btn-quiet btn-block" data-ob="skip">${t('ob.skip')}</button>
         </div>
-        <p class="ob-note">Prototype. No real account is created and no money is involved.</p>
+        <p class="ob-note">${t('ob.note')}</p>
       </div>`;
-    layer.querySelector('.ob-title').focus();
+    layer.scrollTop = 0;
+    layer.querySelector('.ob-title').focus({ preventScroll: true });
+  }
+
+  // Step 2: choose a language (switches instantly; can be changed later in Profile)
+  function stepLanguage() {
+    current = stepLanguage;
+    layer.innerHTML = `
+      <div class="ob-content">
+        <button type="button" class="back-btn" data-ob="back-welcome">${UI.icon('chevronLeft', { size: 22 })}<span>${t('common.back')}</span></button>
+        <h1 class="ob-title ob-title-sm" tabindex="-1">${t('ob.langTitle')}</h1>
+        <p class="muted">${t('ob.langHint')}</p>
+        <fieldset class="ob-langs">
+          <legend class="sr-only">${t('ob.langTitle')}</legend>
+          ${I18N.LANGUAGES.map(
+            (l) => `
+            <label class="ob-lang-option">
+              <input type="radio" name="ob-lang" value="${l.code}" data-lang="${l.code}" ${l.code === I18N.lang ? 'checked' : ''}>
+              <span class="ob-lang-badge" aria-hidden="true">${l.short}</span>
+              <span class="ob-lang-text">
+                <span class="ob-lang-name" lang="${l.html}">${l.native || l.name}</span>
+                <span class="ob-lang-cta" lang="${l.html}">${l.cta}</span>
+              </span>
+            </label>`
+          ).join('')}
+        </fieldset>
+        <p class="small muted">${t('language.draftNote')}</p>
+        <button type="button" class="btn btn-primary btn-block" data-ob="signup">${t('common.continue')}</button>
+      </div>`;
+    layer.scrollTop = 0;
+    layer.querySelector('.ob-title').focus({ preventScroll: true });
   }
 
   function validate() {
     const errors = [];
-    if (form.fullName.trim().length < 2) errors.push({ field: 'ob-name', message: 'Enter your full name.' });
+    if (form.fullName.trim().length < 2) errors.push({ field: 'ob-name', key: 'ob.error.name' });
     const digits = form.phone.replace(/\D/g, '');
     if (!/^7\d{8}$/.test(digits)) {
-      errors.push({ field: 'ob-phone', message: 'Enter a 9-digit mobile number that starts with 7.' });
+      errors.push({ field: 'ob-phone', key: 'ob.error.phone' });
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      errors.push({ field: 'ob-email', message: 'Enter an email address like name@example.com.' });
+      errors.push({ field: 'ob-email', key: 'ob.error.email' });
     }
     return errors;
   }
@@ -77,40 +93,42 @@
   }
 
   function stepSignup(errors = []) {
-    const errorFor = (id) => (errors.find((e) => e.field === id) || {}).message;
+    current = () => stepSignup(errors);
+    const found = (id) => errors.find((e) => e.field === id);
+    const errorFor = (id) => (found(id) ? t(found(id).key) : '');
     layer.innerHTML = `
       <div class="ob-content ob-form-step">
-        <button type="button" class="back-btn" data-ob="back">${UI.icon('chevronLeft', { size: 22 })}<span>Back</span></button>
-        <h1 class="ob-title ob-title-sm" tabindex="-1">Create your account</h1>
-        <p class="muted">It takes a minute. In the live product, you'd also verify your identity with the proposed broker partner.</p>
+        <button type="button" class="back-btn" data-ob="back">${UI.icon('chevronLeft', { size: 22 })}<span>${t('common.back')}</span></button>
+        <h1 class="ob-title ob-title-sm" tabindex="-1">${t('ob.signupTitle')}</h1>
+        <p class="muted">${t('ob.signupIntro')}</p>
 
         ${
           errors.length
             ? `<div class="error-summary" role="alert" tabindex="-1">
-                <p class="error-summary-title">Fix ${errors.length === 1 ? 'this problem' : `these ${errors.length} problems`} to continue</p>
+                <p class="error-summary-title">${t('ob.errorSummary', { count: errors.length })}</p>
                 <ul role="list">
-                  ${errors.map((e) => `<li><a href="#${e.field}" data-focus="${e.field}">${e.message}</a></li>`).join('')}
+                  ${errors.map((e) => `<li><a href="#${e.field}" data-focus="${e.field}">${t(e.key)}</a></li>`).join('')}
                 </ul>
               </div>`
             : ''
         }
 
         <form class="ob-form" novalidate>
-          ${field({ id: 'ob-name', label: 'Full name', value: form.fullName, autocomplete: 'name', error: errorFor('ob-name') })}
+          ${field({ id: 'ob-name', label: t('ob.name'), value: form.fullName, autocomplete: 'name', error: errorFor('ob-name') })}
           ${field({
             id: 'ob-phone',
-            label: 'Mobile number',
+            label: t('ob.phone'),
             value: form.phone,
             type: 'tel',
             inputmode: 'tel',
             autocomplete: 'tel-national',
             prefix: '+250',
-            hint: '9 digits, starting with 7',
+            hint: t('ob.phoneHint'),
             error: errorFor('ob-phone'),
           })}
           ${field({
             id: 'ob-email',
-            label: 'Email',
+            label: t('ob.email'),
             value: form.email,
             type: 'email',
             inputmode: 'email',
@@ -119,9 +137,9 @@
           })}
           <div class="notice">
             ${UI.icon('info')}
-            <p>Prototype: these details aren't saved or sent anywhere, and are cleared when the page reloads.</p>
+            <p>${t('ob.privacy')}</p>
           </div>
-          <button type="submit" class="btn btn-primary btn-block" data-ob="create">Create account</button>
+          <button type="submit" class="btn btn-primary btn-block" data-ob="create">${t('ob.create')}</button>
         </form>
       </div>`;
 
@@ -140,28 +158,43 @@
     }
     const button = layer.querySelector('[data-ob="create"]');
     button.setAttribute('aria-busy', 'true');
-    button.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Creating your account…</span>';
+    button.innerHTML = `<span class="spinner" aria-hidden="true"></span><span>${t('ob.creating')}</span>`;
     layer.querySelectorAll('button, input').forEach((node) => {
       node.disabled = true;
     });
-    UI.announce('Creating your sample account');
+    UI.announce(t('ob.creating'));
     await UI.wait(900);
-    stepDone();
+    stepVerify();
+  }
+
+  // Simulated identity check straight after sign-up (can be skipped)
+  function stepVerify() {
+    current = () => {}; // the verification flow redraws itself on a language change
+    KYC.render(layer, { onFinish: stepDone, onSkip: stepDone });
   }
 
   function stepDone() {
+    current = stepDone;
+    layer.onclick = null; // stop listening for verification buttons
+    layer.onchange = null;
     const first = form.fullName.trim().split(/\s+/)[0];
+    const verified = SampleData.kyc.status === 'verified';
     layer.innerHTML = `
       <div class="ob-content ob-done">
-        <span class="result-icon">${UI.icon('checkCircle', { size: 30 })}</span>
-        <h1 class="ob-title ob-title-sm" tabindex="-1">Welcome, ${UI.esc(first)}!</h1>
-        <p class="muted">Your sample account is ready. Everything you'll see is simulated.</p>
+        ${UI.successArt()}
+        <h1 class="ob-title ob-title-sm" tabindex="-1">${t('ob.welcome', { name: UI.esc(first) })}</h1>
+        <p class="muted">${t('ob.ready')}</p>
+        <p class="ob-kyc-status">${
+          verified
+            ? `${UI.icon('shield', { size: 18 })}<span>${t('ob.kycDone')}</span>`
+            : `${UI.icon('info', { size: 18 })}<span>${t('ob.kycLater')}</span>`
+        }</p>
         <ul class="ob-points" role="list">
-          <li>${UI.icon('home')}<span>See your balance and holdings on Home</span></li>
-          <li>${UI.icon('invest')}<span>Try a simulated buy in Invest</span></li>
-          <li>${UI.icon('circle')}<span>See how a Circle member can leave without affecting others</span></li>
+          <li>${UI.icon('home')}<span>${t('ob.next1')}</span></li>
+          <li>${UI.icon('invest')}<span>${t('ob.next2')}</span></li>
+          <li>${UI.icon('circle')}<span>${t('ob.next3')}</span></li>
         </ul>
-        <button type="button" class="btn btn-primary btn-block" data-ob="finish">Go to Home</button>
+        <button type="button" class="btn btn-primary btn-block" data-ob="finish">${t('ob.goHome')}</button>
       </div>`;
     layer.querySelector('.ob-title').focus();
   }
@@ -193,7 +226,7 @@
     layer.className = 'onboarding';
     layer.setAttribute('role', 'dialog');
     layer.setAttribute('aria-modal', 'true');
-    layer.setAttribute('aria-label', 'Welcome to Ubuntu Invest');
+    layer.setAttribute('aria-label', t('ob.dialogLabel'));
     phone.appendChild(layer);
     background().forEach((node) => node.setAttribute('inert', ''));
 
@@ -204,13 +237,29 @@
         layer.querySelector(`#${link.dataset.focus}`).focus();
         return;
       }
+      const langButton = event.target.closest('[data-lang]');
+      if (langButton) {
+        I18N.set(langButton.dataset.lang);
+        const again = layer.querySelector(`[data-lang="${langButton.dataset.lang}"]`);
+        if (again) again.focus();
+        return;
+      }
       const button = event.target.closest('[data-ob]');
       if (!button) return;
       const action = button.dataset.ob;
       if (action === 'signup') stepSignup();
-      if (action === 'back') stepWelcome();
+      if (action === 'back') stepLanguage();
+      if (action === 'back-welcome') stepWelcome();
+      if (action === 'start') stepLanguage();
       if (action === 'skip') close({ saveDetails: false });
       if (action === 'finish') close({ saveDetails: true });
+    });
+
+    layer.addEventListener('change', (event) => {
+      if (event.target.name !== 'ob-lang') return;
+      I18N.set(event.target.value); // redraws this step in the new language
+      const again = layer.querySelector(`[data-lang="${event.target.value}"]`);
+      if (again) again.focus();
     });
 
     layer.addEventListener('submit', (event) => {
@@ -220,6 +269,18 @@
 
     stepWelcome();
   }
+
+  // Redraw the current step in the new language, keeping anything typed
+  I18N.onChange(() => {
+    if (!layer) return;
+    layer.setAttribute('aria-label', t('ob.dialogLabel'));
+    ['fullName:#ob-name', 'phone:#ob-phone', 'email:#ob-email'].forEach((pair) => {
+      const [key, sel] = pair.split(':');
+      const input = layer.querySelector(sel);
+      if (input) form[key] = input.value;
+    });
+    current();
+  });
 
   window.Onboarding = { start };
   start();

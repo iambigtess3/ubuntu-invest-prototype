@@ -168,3 +168,122 @@
     padding-top: env(safe-area-inset-top, 0px);
   }
 }
+
+/* Verification status on the welcome confirmation */
+.ob-kyc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ob-kyc-status .icon {
+  flex: none;
+  color: var(--navy);
+}
+
+/* Language choice on the welcome screen */
+.ob-lang {
+  margin-bottom: var(--space-1);
+}
+
+.ob-lang button {
+  padding: 0 6px;
+  font-size: 13px;
+}
+
+/* ---------- Design B: welcome and language steps ---------- */
+.onboarding {
+  background: var(--cream);
+}
+
+.ob-welcome {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-8);
+}
+
+.ob-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+
+.ob-welcome .ob-title {
+  font-size: 32px;
+  line-height: 1.08;
+  color: var(--navy);
+}
+
+.ob-scene {
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: #FDF0DF;
+}
+
+.ob-actions .btn-primary .icon {
+  margin-left: 4px;
+}
+
+.ob-langs {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ob-lang-option {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.ob-lang-option:has(input:checked) {
+  border-color: var(--green-strong);
+  background: var(--gain-tint);
+}
+
+.ob-lang-option input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--green-strong);
+}
+
+.ob-lang-badge {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--navy);
+  font: 700 13px/1 var(--font-display);
+  color: #FFFFFF;
+}
+
+.ob-lang-text {
+  display: grid;
+  min-width: 0;
+}
+
+.ob-lang-name {
+  font-weight: 600;
+}
+
+.ob-lang-cta {
+  font-size: 13px;
+  color: var(--muted);
+}
