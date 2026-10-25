@@ -981,9 +981,8 @@ button.row:active {
   color: var(--line-strong);
 }
 
-/* Company "logo" tile (initials, no real logos) and people avatars */
-.mark,
-.avatar {
+/* Company "logo" tile (initials, no real logos) */
+.mark {
   display: grid;
   place-items: center;
   flex: none;
@@ -999,14 +998,24 @@ button.row:active {
   letter-spacing: 0.01em;
 }
 
+/* People avatars: initials on muted sage, navy text (UI.avatar sets the size) */
 .avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--avatar-size, 40px);
+  height: var(--avatar-size, 40px);
   border-radius: 50%;
-  font: 700 16px/1 var(--font-display);
+  background: #DCE8DF;
+  color: var(--navy);
+  font: 600 calc(var(--avatar-size, 40px) * 0.36) / 1 var(--font-display);
+  letter-spacing: 0.03em;
+  user-select: none;
 }
 
+/* The person using the app: same colours, with a thin navy ring */
 .avatar.is-you {
-  background: var(--navy);
-  color: #FFFFFF;
+  box-shadow: inset 0 0 0 2px var(--navy);
 }
 
 /* Round icon used at the start of transaction and settings rows */
@@ -1169,12 +1178,6 @@ button.row:active {
   display: block;
   width: 100%;
   height: auto;
-}
-
-.avatar-art {
-  display: block;
-  flex: none;
-  border-radius: 50%;
 }
 
 /* Navy header band at the top of a screen (Home) */
@@ -1395,9 +1398,46 @@ button.row:active {
 }
 
 /* Shorter banner version for the top of a screen */
-.illustration.is-banner {
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
+/* Compact frame for screen illustrations: a small supporting visual.
+   Fixed height, whole artwork (object-fit: contain, never cropped), centred,
+   on a soft cream background that blends with the app. */
+.illustration-frame {
+  --frame-h: 170px;
+  --frame-pad: var(--space-2);
+  display: grid;
+  place-items: center;
+  height: var(--frame-h);
+  padding: var(--frame-pad);
+  border-radius: var(--radius-xl);
+  background: #F7EFE3;
+  overflow: hidden;
+}
+
+.illustration-frame .illustration {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(var(--frame-h) - 2 * var(--frame-pad));
+  object-fit: contain;
+  border-radius: 0;
+  background: transparent;
+  /* Soft edges: the picture fades into the panel along all four sides (no hard
+     rectangle), while keeping its own shape, whatever its proportions */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 10%, #000 90%, transparent),
+    linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 10%, #000 90%, transparent),
+    linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  mask-composite: intersect;
+}
+
+/* Narrow phones: a little shorter */
+@container screen (max-width: 340px) {
+  .illustration-frame {
+    --frame-h: 150px;
+  }
 }
 
 /* Status badges: Completed / Pending / Active */
@@ -1449,10 +1489,50 @@ button.row:active {
 }
 
 .stat-value {
-  font: 700 16px/1.25 var(--font-display);
+  font: 700 15px/1.25 var(--font-display);
   color: var(--navy);
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  white-space: nowrap; /* never split an amount across lines */
+}
+
+@container screen (max-width: 360px) {
+  .stats {
+    padding: var(--space-3) var(--space-1);
+    gap: 0;
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+}
+
+/* Narrowest phones: stack the three figures (label left, amount right) */
+@container screen (max-width: 300px) {
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-1) var(--space-4);
+  }
+
+  .stat {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--space-2);
+    padding: var(--space-2) 0;
+    text-align: left;
+  }
+
+  .stat + .stat {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .stat-value {
+    font-size: 15px;
+  }
+
+  .stat > dd:nth-of-type(2) {
+    grid-column: 1 / -1;
+  }
 }
 
 .stat-label {
