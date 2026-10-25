@@ -51,6 +51,24 @@ tabs.forEach((tab) => {
   });
 });
 
+// Screens without a tab (Transaction history) are opened with App.show() and
+// closed with App.back(), which returns to the screen you came from.
+let previousScreen = 'home';
+window.App = {
+  show(name) {
+    if (name !== currentScreen) previousScreen = currentScreen || 'home';
+    showScreen(name);
+  },
+  back() {
+    showScreen(previousScreen);
+    const tab = document.querySelector(`.tab[data-tab="${previousScreen}"]`);
+    if (tab) tab.focus();
+  },
+  get current() {
+    return currentScreen;
+  },
+};
+
 // Ask each screen file to draw its content once
 Object.keys(Screens).forEach((name) => {
   Screens[name](document.getElementById(name));
