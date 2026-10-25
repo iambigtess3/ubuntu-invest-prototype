@@ -2,34 +2,46 @@
 //
 // Everything on this screen is simulated sample data: prices, balances,
 // holdings and orders (all from js/data.js). No real market prices, money or trades.
-// Views: "list" (portfolio + companies) and "detail" (one company + buy sheet).
+// Views: "list" (search, sector filters, companies, your shares) and
+// "detail" (one company: chart, "How many shares?" and the buy sheet).
+// Text comes from js/i18n/*.js.
 
 window.Screens = window.Screens || {};
 
 Screens.invest = function (el) {
-  // ---------- Sample data (shared, from js/data.js; simulated, not real prices) ----------
   const { companies, DAYS } = SampleData;
+  const t = (key, vars) => I18N.t(key, vars);
 
   const RANGES = {
-    '1W': { points: 6, label: 'past week' },
-    '1M': { points: 22, label: 'past month' },
-    '3M': { points: 64, label: 'past 3 months' },
-    '1Y': { points: DAYS, label: 'past year' },
+    '1W': { points: 6 },
+    '1M': { points: 22 },
+    '3M': { points: 64 },
+    '1Y': { points: DAYS },
   };
+  const rangeButtons = (attr, current) =>
+    Object.keys(RANGES)
+      .map((r) => `<button type="button" ${attr}="${r}" aria-pressed="${r === current}" aria-label="${UI.esc(t(`range.${r}.long`))}">${t(`range.${r}`)}</button>`)
+      .join('');
 
   const state = {
     view: 'list',
     selectedId: null,
-    range: '1M', // portfolio chart
-    detailRange: '1M', // company chart
+    range: '1M',
+    detailRange: '1M',
+    query: '',
+    sector: 'all',
+    qty: 1,
+    qtyError: '',
     listScroll: 0,
   };
 
   const scroller = () => el.closest('.screens');
   const byId = (id) => companies.find((c) => c.id === id);
-  const sharesLabel = (n) => `${UI.groupDigits(n)} ${n === 1 ? 'share' : 'shares'}`;
+  const sharesLabel = (n) => t('common.shares', { count: n });
+  const sector = (c) => t(`sector.${c.sector}`);
+  const todayChange = (c) => ((c.path[DAYS - 1] - c.path[DAYS - 2]) / c.path[DAYS - 2]) * 100;
+  const maxAffordable = (c) => Math.floor(SampleData.balance / c.price);
 
-  // Value of the current holdings over the chosen range
   function portfolioSeries(range) {
     const n = RANGES[range].points;
     const series = new Array(n).fill(0);
@@ -45,68 +57,98 @@ Screens.invest = function (el) {
 
   const pctChange = (series) => (series[0] ? ((series[series.length - 1] - series[0]) / series[0]) * 100 : 0);
 
-  // ---------- Rendering ----------
   function render() {
     if (state.view === 'detail') renderDetail();
     else renderList();
   }
 
+  // ---------- List ----------
+  function visibleCompanies() {
+    const q = state.query.trim().toLowerCase();
+    return companies.filter(
+      (c) => (state.sector === 'all' || c.sector === state.sector) && (!q || c.name.toLowerCase().includes(q) || c.mark.toLowerCase().includes(q))
+    );
+  }
+
+  function companyRows() {
+    const list = visibleCompanies();
+    if (!list.length) {
+      return `<div class="empty">
+          ${UI.icon('search', { size: 28 })}
+          <strong>${t('invest.noResults.title')}</strong>
+          <span>${t('invest.noResults.body')}</span>
+        </div>`;
+    }
+    return `<ul class="list" role="list">${list.map(stockRow).join('')}</ul>`;
+  }
+
   function renderList() {
+    const sectors = [...new Set(companies.map((c) => c.sector))];
     const series = portfolioSeries(state.range);
     const value = series[series.length - 1];
     const hasHoldings = value > 0;
     const change = pctChange(series);
-    const changeAmount = value - series[0];
-    const range = RANGES[state.range];
+    const past = t(`range.${state.range}.past`);
     const chartLabel = hasHoldings
-      ? `Simulated value of your shares ${change >= 0 ? 'rose' : 'fell'} ${Math.abs(change).toFixed(1)}% over the ${range.label}, from ${UI.rwf(series[0])} to ${UI.rwf(value)}.`
+      ? t(change >= 0 ? 'invest.chart.up' : 'invest.chart.down', { pct: UI.pct(Math.abs(change)).replace('+', ''), period: past, from: UI.rwf(series[0]), to: UI.rwf(value) })
       : '';
 
     el.innerHTML = `
       <header class="screen-head">
         <div>
-          <h1 class="screen-title">Invest</h1>
-          <p class="screen-subtitle">Companies on the Rwanda Stock Exchange</p>
+          <h1 class="screen-title">${t('invest.title')}</h1>
+          <p class="screen-subtitle">${t('invest.subtitle')}</p>
         </div>
       </header>
 
+      <div class="search">
+        ${UI.icon('search', { size: 20 })}
+        <input type="search" id="invest-search" value="${UI.esc(state.query)}" placeholder="${UI.esc(t('invest.search'))}" aria-label="${UI.esc(t('invest.search'))}" autocomplete="off">
+      </div>
+
+      <div class="filters" role="group" aria-label="${UI.esc(t('invest.filterLabel'))}">
+        <button type="button" class="chip" data-sector="all" aria-pressed="${state.sector === 'all'}">${t('invest.filter.all')}</button>
+        ${sectors.map((s) => `<button type="button" class="chip" data-sector="${s}" aria-pressed="${state.sector === s}">${t(`sector.${s}`)}</button>`).join('')}
+      </div>
+
+      <section class="section" aria-labelledby="market-title">
+        <h2 id="market-title" class="sr-only">${t('invest.companies')}</h2>
+        <div data-company-list aria-live="polite">${companyRows()}</div>
+        <p class="section-intro">${t('invest.companiesIntro')}</p>
+      </section>
+
       <section class="card-hero on-navy portfolio" aria-labelledby="portfolio-title">
         <div class="hero-top">
-          <h2 id="portfolio-title" class="hero-label">Your shares</h2>
-          <span class="tag tag-sim">Simulated</span>
+          <h2 id="portfolio-title" class="hero-label">${t('invest.yourShares')}</h2>
+          <span class="tag tag-sim">${t('common.simulated')}</span>
         </div>
         <p class="hero-value">${UI.rwf(value)}</p>
         <p class="hero-change">
           ${UI.change(change)}
-          <span class="num">${UI.signedRwf(changeAmount)}</span>
-          <span>${range.label}</span>
+          <span class="num">${UI.signedRwf(value - series[0])}</span>
+          <span>${past}</span>
         </p>
         <div class="hero-chart">
-          ${hasHoldings ? UI.lineChart(series, { width: 320, height: 104, area: true, label: chartLabel }) : ''}
+          ${hasHoldings ? UI.lineChart(series, { width: 320, height: 104, area: true, baseline: true, label: chartLabel }) : ''}
         </div>
-        <div class="segmented" role="group" aria-label="Chart range">
-          ${Object.keys(RANGES)
-            .map((r) => `<button type="button" data-range="${r}" aria-pressed="${r === state.range}">${r}</button>`)
-            .join('')}
+        <p class="chart-note">${t('chart.startLine')}</p>
+        <div class="segmented" role="group" aria-label="${UI.esc(t('invest.chartRange'))}">
+          ${rangeButtons('data-range', state.range)}
         </div>
         <dl class="hero-split">
-          <div><dt>Available to invest</dt><dd>${UI.rwf(SampleData.balance)}</dd></div>
+          <div><dt>${t('invest.available')}</dt><dd>${UI.rwf(SampleData.balance)}</dd></div>
         </dl>
       </section>
 
-      <section class="section" aria-labelledby="market-title">
-        <h2 id="market-title" class="section-title">Companies</h2>
-        <p class="section-intro">Prices are simulated for this prototype, not real or current market prices. Tap a company to see more or buy.</p>
-        <ul class="list" role="list">
-          ${companies.map(stockRow).join('')}
-        </ul>
-      </section>
+      <details class="card learn">
+        <summary>${UI.icon('info', { size: 20 })}<span>${t('learn.share.q')}</span></summary>
+        <p>${t('learn.share.a')}</p>
+      </details>
     `;
   }
 
   function stockRow(c) {
-    const today = ((c.path[DAYS - 1] - c.path[DAYS - 2]) / c.path[DAYS - 2]) * 100;
-    const month = c.path.slice(-RANGES['1M'].points);
+    const month = c.path.slice(-22);
     const trend = month[month.length - 1] >= month[0] ? 'up' : 'down';
     const shares = SampleData.holdings[c.id] || 0;
     return `
@@ -115,54 +157,65 @@ Screens.invest = function (el) {
           <span class="mark" aria-hidden="true">${UI.esc(c.mark)}</span>
           <span class="row-main">
             <span class="row-title">${UI.esc(c.name)}</span>
-            <span class="row-meta">${shares ? `You own ${sharesLabel(shares)}` : UI.esc(c.sector)}</span>
+            <span class="row-meta stock-meta">
+              <span class="num">${UI.rwf(c.price)}</span>
+              ${UI.change(todayChange(c))}
+              <span class="sr-only">${t('invest.todaySimPrice')}</span>
+            </span>
+            ${shares ? `<span class="row-meta">${t('invest.youOwn', { shares: sharesLabel(shares) })}</span>` : ''}
           </span>
-          <span class="stock-spark ${trend}" aria-hidden="true">
-            ${UI.lineChart(month, { width: 64, height: 28, strokeWidth: 1.75, padding: 3 })}
-          </span>
-          <span class="row-end">
-            <span class="row-amount">${UI.rwf(c.price)}</span>
-            ${UI.change(today)}
-            <span class="sr-only">today, simulated price</span>
-          </span>
+          <span class="spark ${trend}" aria-hidden="true">${UI.lineChart(month, { width: 64, height: 28, strokeWidth: 1.75, padding: 3 })}</span>
+          <span class="row-chevron">${UI.icon('chevronRight', { size: 20 })}</span>
         </button>
       </li>`;
+  }
+
+  // ---------- Company detail ----------
+  function qtyError(c, qty) {
+    if (!qty || qty < 1) return t('buy.error.qty');
+    if (qty * c.price > SampleData.balance) return t('buy.error.qtyBalance', { shares: sharesLabel(qty), amount: UI.rwf(qty * c.price) });
+    return '';
   }
 
   function renderDetail() {
     const c = byId(state.selectedId);
     const range = RANGES[state.detailRange];
+    const past = t(`range.${state.detailRange}.past`);
     const series = c.path.slice(-range.points);
     const change = pctChange(series);
     const trend = change >= 0 ? 'up' : 'down';
     const shares = SampleData.holdings[c.id] || 0;
-    const summary = `Simulated price ${change >= 0 ? 'rose' : 'fell'} ${Math.abs(change).toFixed(1)}% over the ${range.label}, from ${UI.rwf(series[0])} to ${UI.rwf(series[series.length - 1])}.`;
+    const summary = t(change >= 0 ? 'invest.priceChart.up' : 'invest.priceChart.down', {
+      pct: UI.pct(Math.abs(change)).replace('+', ''),
+      period: past,
+      from: UI.rwf(series[0]),
+      to: UI.rwf(series[series.length - 1]),
+    });
+    const max = maxAffordable(c);
 
     el.innerHTML = `
-      <button type="button" class="back-btn" data-action="back">${UI.icon('chevronLeft', { size: 22 })}<span>Invest</span></button>
-
-      <header class="detail-head">
+      <div class="title-row detail-head">
+        <button type="button" class="icon-btn back-icon" data-action="back" aria-label="${UI.esc(t('common.back'))}">${UI.icon('chevronLeft', { size: 22 })}</button>
         <span class="mark mark-lg" aria-hidden="true">${UI.esc(c.mark)}</span>
-        <div>
+        <div class="detail-name">
           <h1 class="detail-title" tabindex="-1">${UI.esc(c.name)}</h1>
-          <p class="small muted">${UI.esc(c.sector)}. Listed on the Rwanda Stock Exchange.</p>
+          <p class="small muted">${t('invest.listed', { sector: sector(c) })}</p>
         </div>
-      </header>
+      </div>
 
       <section class="card detail-price" aria-labelledby="detail-price-label">
         <div class="detail-price-row">
-          <h2 id="detail-price-label" class="sr-only">Simulated price</h2>
+          <h2 id="detail-price-label" class="sr-only">${t('invest.simPrice')}</h2>
           <p class="detail-price-value num">${UI.rwf(c.price)}</p>
-          <span class="tag tag-sim">Simulated price</span>
+          <span class="tag tag-sim">${t('invest.simPrice')}</span>
         </div>
-        <p class="detail-change">${UI.change(change)} <span class="muted">${range.label}</span></p>
+        <p class="detail-change">${UI.change(change)} <span class="muted">${past}</span></p>
         <div class="detail-chart ${trend}">
-          ${UI.lineChart(series, { width: 320, height: 140, area: true, label: summary })}
+          ${UI.lineChart(series, { width: 320, height: 140, area: true, baseline: true, label: summary })}
         </div>
-        <div class="segmented" role="group" aria-label="Price chart range">
-          ${Object.keys(RANGES)
-            .map((r) => `<button type="button" data-detail-range="${r}" aria-pressed="${r === state.detailRange}">${r}</button>`)
-            .join('')}
+        <p class="chart-note">${t('chart.startLine')}</p>
+        <div class="segmented" role="group" aria-label="${UI.esc(t('invest.chartRange'))}">
+          ${rangeButtons('data-detail-range', state.detailRange)}
         </div>
       </section>
 
@@ -170,208 +223,197 @@ Screens.invest = function (el) {
         shares
           ? `
         <section class="card position" aria-labelledby="position-title">
-          <h2 id="position-title" class="section-title">Your simulated position</h2>
+          <h2 id="position-title" class="section-title">${t('invest.position')}</h2>
           <dl class="summary">
-            <div><dt>Shares</dt><dd>${UI.groupDigits(shares)}</dd></div>
-            <div><dt>Value at simulated price</dt><dd>${UI.rwf(shares * c.price)}</dd></div>
+            <div><dt>${t('invest.sharesLabel')}</dt><dd>${UI.groupDigits(shares)}</dd></div>
+            <div><dt>${t('invest.valueAtSim')}</dt><dd>${UI.rwf(shares * c.price)}</dd></div>
           </dl>
         </section>`
           : ''
       }
 
+      <section class="card buy-box" aria-labelledby="qty-title">
+        <h2 id="qty-title" class="section-title">${t('buy.howMany')}</h2>
+        <div class="stepper">
+          <button type="button" data-qty="-1" aria-label="${UI.esc(t('buy.decrease'))}" ${state.qty <= 1 ? 'disabled' : ''}>${UI.icon('minus', { size: 20 })}</button>
+          <input id="buy-qty" inputmode="numeric" autocomplete="off" value="${state.qty}" aria-label="${UI.esc(t('buy.qtyLabel'))}"
+            aria-describedby="qty-cost${state.qtyError ? ' qty-error' : ''}" ${state.qtyError ? 'aria-invalid="true"' : ''}>
+          <button type="button" data-qty="1" aria-label="${UI.esc(t('buy.increase'))}" ${state.qty >= max ? 'disabled' : ''}>${UI.icon('plus', { size: 20 })}</button>
+        </div>
+        <p class="qty-cost" id="qty-cost" aria-live="polite">${t('buy.estLine', { amount: UI.rwf(state.qty * c.price) })}</p>
+        <p class="hint">${t('buy.available', { amount: UI.rwf(SampleData.balance) })}</p>
+        ${state.qtyError ? `<p class="error" id="qty-error" role="alert">${UI.icon('alert', { size: 16 })}<span>${state.qtyError}</span></p>` : ''}
+        <button type="button" class="btn btn-success btn-block" data-action="buy">${t('buy.buyShares')}</button>
+        <p class="small muted center">${t('buy.noRealTrade')}</p>
+      </section>
+
       <div class="notice notice-warn">
         ${UI.icon('alert')}
-        <p>Share prices can go down as well as up, and you could get back less than you invest. Simulated past performance says nothing about future results.</p>
-      </div>
-
-      <div class="detail-cta">
-        <button type="button" class="btn btn-primary btn-block" data-action="buy">Buy ${UI.esc(c.name)}</button>
-        <p class="small muted center">Simulated order. No real trade is placed.</p>
+        <p>${t('invest.risk')}</p>
       </div>
     `;
   }
 
-  // ---------- Buy flow (bottom sheet) ----------
-  function openBuy(c) {
-    const sheet = UI.openSheet({ title: `Buy ${c.name}` });
-    let amount = 0;
+  // ---------- Buy sheet: review → processing → success ----------
+  function openBuy(c, qty) {
+    const sheet = UI.openSheet({ title: t('buy.reviewTitle') });
     let acknowledged = false;
-
-    const estimate = () => {
-      const shares = Math.floor(amount / c.price);
-      return { shares, cost: shares * c.price };
-    };
-
-    function validate() {
-      if (!amount) return 'Enter an amount to invest.';
-      if (amount < c.price) return `Enter at least ${UI.rwf(c.price)} to buy one share.`;
-      if (amount > SampleData.balance) return `That's more than your available sample balance of ${UI.rwf(SampleData.balance)}.`;
-      return '';
-    }
-
-    function estimateText() {
-      if (!amount) return 'Choose an amount to see an estimate.';
-      if (amount < c.price) return `One share costs ${UI.rwf(c.price)} at the simulated price.`;
-      const { shares, cost } = estimate();
-      return `About ${sharesLabel(shares)}, estimated cost ${UI.rwf(cost)}.`;
-    }
-
-    function stepAmount(error = '') {
-      sheet.setTitle(`Buy ${c.name}`);
-      sheet.body.innerHTML = `
-        <p class="small muted">Simulated price ${UI.rwf(c.price)} per share. In the live product, the final price would be set when an order is filled.</p>
-        <div class="field">
-          <label for="buy-amount">Amount to invest</label>
-          <div class="input-wrap">
-            <span class="input-prefix" aria-hidden="true">RWF</span>
-            <input id="buy-amount" class="input" inputmode="numeric" autocomplete="off"
-              value="${amount ? UI.groupDigits(amount) : ''}"
-              aria-describedby="buy-hint${error ? ' buy-error' : ''}" ${error ? 'aria-invalid="true"' : ''}>
-          </div>
-          <p class="hint" id="buy-hint">Available: ${UI.rwf(SampleData.balance)} (sample balance)</p>
-          ${error ? `<p class="error" id="buy-error" role="alert">${UI.icon('alert', { size: 16 })}<span>${error}</span></p>` : ''}
-        </div>
-        <div class="chips" role="group" aria-label="Quick amounts">
-          ${[5000, 10000, 25000]
-            .map((v) => `<button type="button" class="chip" data-amount="${v}" aria-pressed="${amount === v}">${UI.rwf(v)}</button>`)
-            .join('')}
-        </div>
-        <p class="estimate" data-estimate aria-live="polite">${estimateText()}</p>
-        <button type="button" class="btn btn-primary btn-block" data-step="review">Review order</button>
-      `;
-      if (error) sheet.body.querySelector('#buy-amount').focus();
-    }
+    const cost = qty * c.price;
 
     function stepReview(error = '') {
-      const { shares, cost } = estimate();
-      sheet.setTitle('Review simulated order');
+      sheet.setTitle(t('buy.reviewTitle'));
       sheet.body.innerHTML = `
         <dl class="summary">
-          <div><dt>Company</dt><dd>${UI.esc(c.name)}</dd></div>
-          <div><dt>Shares</dt><dd>${UI.groupDigits(shares)}</dd></div>
-          <div><dt>Simulated price</dt><dd>${UI.rwf(c.price)}</dd></div>
-          <div><dt>Estimated cost</dt><dd>${UI.rwf(cost)}</dd></div>
-          <div><dt>Fees</dt><dd>To be confirmed with broker partner</dd></div>
-          <div><dt>Placed through</dt><dd>Proposed licensed broker partner</dd></div>
+          <div><dt>${t('buy.company')}</dt><dd>${UI.esc(c.name)}</dd></div>
+          <div><dt>${t('invest.sharesLabel')}</dt><dd>${UI.groupDigits(qty)}</dd></div>
+          <div><dt>${t('invest.simPrice')}</dt><dd>${UI.rwf(c.price)}</dd></div>
+          <div><dt>${t('buy.estCost')}</dt><dd>${UI.rwf(cost)}</dd></div>
+          <div><dt>${t('buy.cashAfter')}</dt><dd>${UI.rwf(SampleData.balance - cost)}</dd></div>
+          <div><dt>${t('buy.fees')}</dt><dd>${t('buy.feesValue')}</dd></div>
+          <div><dt>${t('buy.placedThrough')}</dt><dd>${t('buy.broker')}</dd></div>
         </dl>
-        <div class="notice">
+        <div class="notice notice-ok">
           ${UI.icon('info')}
-          <p>This is a simulated order. No money moves and no trade is placed.</p>
+          <p>${t('buy.simNotice')}</p>
         </div>
+        ${
+          SampleData.kyc.status === 'verified'
+            ? ''
+            : `<div class="notice notice-warn">${UI.icon('shield')}<p>${t('buy.kycNotice')}</p></div>`
+        }
         <label class="check">
           <input type="checkbox" id="buy-ack" ${acknowledged ? 'checked' : ''} ${error ? 'aria-invalid="true" aria-describedby="ack-error"' : ''}>
-          <span>I understand share prices can go down as well as up, and I could get back less than I invest.</span>
+          <span>${t('buy.ack')}</span>
         </label>
         ${error ? `<p class="error" id="ack-error" role="alert">${UI.icon('alert', { size: 16 })}<span>${error}</span></p>` : ''}
         <div class="sheet-actions">
-          <button type="button" class="btn btn-primary btn-block" data-step="confirm">Place simulated order</button>
-          <button type="button" class="btn btn-quiet btn-block" data-step="amount">Change amount</button>
+          <button type="button" class="btn btn-success btn-block" data-step="confirm">${t('buy.confirmPurchase')}</button>
+          <button type="button" class="btn btn-quiet btn-block" data-sheet-close>${t('common.cancel')}</button>
         </div>
       `;
       if (error) sheet.body.querySelector('#buy-ack').focus();
-      else sheet.focusTitle();
     }
 
     async function confirm() {
       if (!acknowledged) {
-        stepReview('Tick the box to confirm you understand the risk.');
+        stepReview(t('common.ackError'));
         return;
       }
-      const { shares, cost } = estimate();
       const button = sheet.body.querySelector('[data-step="confirm"]');
       button.setAttribute('aria-busy', 'true');
-      button.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Placing simulated order…</span>';
+      button.innerHTML = `<span class="spinner" aria-hidden="true"></span><span>${t('buy.placing')}</span>`;
       sheet.body.querySelectorAll('button, input').forEach((node) => {
         node.disabled = true;
       });
       sheet.lock();
-      UI.announce('Placing simulated order');
+      UI.announce(t('buy.placing'));
       await UI.wait(1100);
-
-      // Shared data: Home and Transaction history update automatically
-      SampleData.recordBuy({ companyId: c.id, shares, cost });
-
+      // Shared data: Home, History and Our Circle stay in step
+      SampleData.recordBuy({ companyId: c.id, shares: qty, cost });
       sheet.unlock();
-      stepSuccess(shares, cost);
+      stepSuccess();
     }
 
-    function stepSuccess(shares, cost) {
-      sheet.setTitle('Order placed');
+    function stepSuccess() {
+      sheet.setTitle(t('buy.placedTitle'));
       sheet.body.innerHTML = `
         <div class="result">
-          <span class="result-icon">${UI.icon('checkCircle', { size: 30 })}</span>
-          <h3 class="result-title">Simulated order placed</h3>
-          <p class="muted">You bought ${sharesLabel(shares)} of ${UI.esc(c.name)} for an estimated ${UI.rwf(cost)}.</p>
+          ${UI.illustration('purchaseSuccess', { className: 'success-illustration' })}
+          <h3 class="result-title">${t('buy.successTitle')}</h3>
+          <p class="muted">${t('buy.placedBody', { shares: sharesLabel(qty), company: UI.esc(c.name), amount: UI.rwf(cost) })}</p>
         </div>
         <dl class="summary">
-          <div><dt>Shares now held</dt><dd>${UI.groupDigits(SampleData.holdings[c.id])}</dd></div>
-          <div><dt>Available to invest</dt><dd>${UI.rwf(SampleData.balance)}</dd></div>
+          <div><dt>${t('buy.nowHeld')}</dt><dd>${UI.groupDigits(SampleData.holdings[c.id])}</dd></div>
+          <div><dt>${t('invest.available')}</dt><dd>${UI.rwf(SampleData.balance)}</dd></div>
         </dl>
-        <div class="notice">
+        <div class="notice notice-ok">
           ${UI.icon('info')}
-          <p>No real trade was made. You'll find this order in your transaction history (Profile).</p>
+          <p>${t('buy.placedNotice')}</p>
         </div>
-        <button type="button" class="btn btn-primary btn-block" data-step="done">Done</button>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-primary btn-block" data-step="portfolio">${t('buy.viewPortfolio')}</button>
+          <button type="button" class="btn btn-secondary btn-block" data-step="done">${t('buy.another')}</button>
+        </div>
       `;
       sheet.focusTitle();
     }
 
-    sheet.body.addEventListener('input', (event) => {
-      if (event.target.id === 'buy-amount') {
-        const digits = event.target.value.replace(/\D/g, '').slice(0, 9);
-        amount = Number(digits) || 0;
-        event.target.value = digits ? UI.groupDigits(amount) : '';
-        event.target.removeAttribute('aria-invalid');
-        sheet.body.querySelectorAll('.chip').forEach((chip) => chip.setAttribute('aria-pressed', String(Number(chip.dataset.amount) === amount)));
-        sheet.body.querySelector('[data-estimate]').textContent = estimateText();
-      }
-    });
-
     sheet.body.addEventListener('change', (event) => {
       if (event.target.id === 'buy-ack') acknowledged = event.target.checked;
     });
-
-    sheet.body.addEventListener('keydown', (event) => {
-      if (event.target.id === 'buy-amount' && event.key === 'Enter') {
-        event.preventDefault();
-        sheet.body.querySelector('[data-step="review"]').click();
-      }
-    });
-
     sheet.body.addEventListener('click', (event) => {
       const button = event.target.closest('button');
       if (!button) return;
-      if (button.dataset.amount) {
-        amount = Number(button.dataset.amount);
-        stepAmount();
-        sheet.body.querySelector(`[data-amount="${amount}"]`).focus();
-      }
-      const step = button.dataset.step;
-      if (step === 'review') {
-        const error = validate();
-        if (error) stepAmount(error);
-        else stepReview();
-      }
-      if (step === 'amount') {
-        stepAmount();
-        sheet.body.querySelector('#buy-amount').focus();
-      }
-      if (step === 'confirm') confirm();
-      if (step === 'done') {
+      if (button.dataset.step === 'confirm') confirm();
+      if (button.dataset.step === 'portfolio') {
         sheet.close({ silent: true });
+        state.view = 'list';
         render();
-        // No toast: it would cover the Back button. The success screen and the
-        // transaction history already confirm the buy.
-        UI.announce(`Simulated order placed: ${c.name}`);
-        const buy = el.querySelector('[data-action="buy"]');
-        if (buy) buy.focus();
+        UI.announce(t('buy.placedAnnounce', { company: c.name }));
+        document.querySelector('.tab[data-tab="home"]').click();
+        return;
+      }
+      if (button.dataset.step === 'done') {
+        sheet.close({ silent: true });
+        state.view = 'list';
+        state.qtyError = '';
+        render();
+        scroller().scrollTop = 0;
+        UI.announce(t('buy.placedAnnounce', { company: c.name }));
+        const search = el.querySelector('#invest-search');
+        if (search) search.focus();
       }
     });
 
-    stepAmount();
+    stepReview();
   }
 
   // ---------- Events ----------
+  function openCompany(id) {
+    state.listScroll = scroller().scrollTop;
+    state.selectedId = id;
+    state.detailRange = '1M';
+    const c = byId(id);
+    state.qty = Math.max(1, Math.min(10, maxAffordable(c)));
+    state.qtyError = '';
+    state.view = 'detail';
+    render();
+    scroller().scrollTop = 0;
+    el.querySelector('.detail-title').focus();
+  }
+
+  function setQty(qty) {
+    const c = byId(state.selectedId);
+    state.qty = Math.max(0, Math.min(qty, 999999));
+    state.qtyError = '';
+    const input = el.querySelector('#buy-qty');
+    if (input && document.activeElement === input) {
+      // Update the cost line and buttons without redrawing the field being typed in
+      el.querySelector('#qty-cost').textContent = t('buy.estLine', { amount: UI.rwf(state.qty * c.price) });
+      // Clear any earlier error as soon as the number changes
+      const err = el.querySelector('#qty-error');
+      if (err) err.remove();
+      input.removeAttribute('aria-invalid');
+      input.setAttribute('aria-describedby', 'qty-cost');
+      el.querySelector('[data-qty="-1"]').disabled = state.qty <= 1;
+      el.querySelector('[data-qty="1"]').disabled = state.qty >= maxAffordable(c);
+      return;
+    }
+    render();
+  }
+
+  el.addEventListener('input', (event) => {
+    if (event.target.id === 'invest-search') {
+      state.query = event.target.value;
+      el.querySelector('[data-company-list]').innerHTML = companyRows();
+    }
+    if (event.target.id === 'buy-qty') {
+      const digits = event.target.value.replace(/\D/g, '').slice(0, 6);
+      event.target.value = digits;
+      setQty(Number(digits) || 0);
+    }
+  });
+
   el.addEventListener('click', (event) => {
     const button = event.target.closest('button');
     if (!button || !el.contains(button)) return;
@@ -384,14 +426,17 @@ Screens.invest = function (el) {
       state.detailRange = button.dataset.detailRange;
       render();
       el.querySelector(`[data-detail-range="${state.detailRange}"]`).focus();
+    } else if (button.dataset.sector) {
+      state.sector = button.dataset.sector;
+      el.querySelectorAll('[data-sector]').forEach((chip) => chip.setAttribute('aria-pressed', String(chip.dataset.sector === state.sector)));
+      el.querySelector('[data-company-list]').innerHTML = companyRows();
     } else if (button.dataset.stock) {
-      state.listScroll = scroller().scrollTop;
-      state.selectedId = button.dataset.stock;
-      state.detailRange = '1M';
-      state.view = 'detail';
-      render();
-      scroller().scrollTop = 0;
-      el.querySelector('.detail-title').focus();
+      openCompany(button.dataset.stock);
+    } else if (button.dataset.qty) {
+      setQty(state.qty + Number(button.dataset.qty));
+      const again = el.querySelector(`[data-qty="${button.dataset.qty}"]`);
+      if (again && !again.disabled) again.focus();
+      else el.querySelector('#buy-qty').focus();
     } else if (button.dataset.action === 'back') {
       const lastId = state.selectedId;
       state.view = 'list';
@@ -400,22 +445,19 @@ Screens.invest = function (el) {
       const row = el.querySelector(`[data-stock="${lastId}"]`);
       if (row) row.focus({ preventScroll: true });
     } else if (button.dataset.action === 'buy') {
-      openBuy(byId(state.selectedId));
+      const c = byId(state.selectedId);
+      state.qtyError = qtyError(c, state.qty);
+      if (state.qtyError) {
+        render();
+        el.querySelector('#buy-qty').focus();
+        return;
+      }
+      openBuy(c, state.qty);
     }
   });
 
-  // Lets Home open a company directly from "Your shares"
-  window.InvestScreen = {
-    openCompany(id) {
-      state.listScroll = 0;
-      state.selectedId = id;
-      state.detailRange = '1M';
-      state.view = 'detail';
-      render();
-      scroller().scrollTop = 0;
-      el.querySelector('.detail-title').focus();
-    },
-  };
+  // Home opens a company directly from "Your shares"
+  window.InvestScreen = { openCompany };
 
   // Tapping the Invest tab again goes back to the company list
   el.addEventListener('tabreselect', () => {
@@ -424,11 +466,16 @@ Screens.invest = function (el) {
     render();
   });
 
+  // Switching language keeps the current view and data
+  I18N.onChange(render);
+
   // A full demo reset (Profile) puts Invest back on its list view
   SampleData.onChange((kind) => {
     if (kind !== 'reset') return;
     state.view = 'list';
     state.range = '1M';
+    state.query = '';
+    state.sector = 'all';
     render();
   });
 

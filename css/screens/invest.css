@@ -1,64 +1,63 @@
-/* Invest screen styles. Lists, rows, tiles and the navy summary card come
-   from css/base.css; only what's specific to Invest lives here. */
+/* Invest screen styles (Design B). Lists, tiles, search, filter chips,
+   stepper and the navy card come from css/base.css. */
 
 #invest .portfolio {
   display: grid;
   gap: var(--space-3);
 }
 
-/* Company rows have one extra column for the small trend line */
+/* Company rows: tile, name with price and today's change, trend line, chevron */
 #invest .stock {
   grid-template-columns: auto minmax(0, 1fr) auto auto;
 }
 
-#invest .stock-spark {
-  width: 56px;
-  height: 28px;
+#invest .stock-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  color: var(--ink);
 }
 
-#invest .stock-spark.up,
-#invest .detail-chart.up {
-  color: var(--gain);
+#invest .stock-meta .change {
+  font-size: 13px;
 }
 
-#invest .stock-spark.down,
-#invest .detail-chart.down {
-  color: var(--loss);
-}
-
-/* Hide the trend line when the phone is very narrow, so names stay readable */
 @container screen (max-width: 320px) {
   #invest .stock {
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
-  #invest .stock-spark {
+  #invest .stock .spark {
     display: none;
   }
 }
 
 /* ---------- Company detail ---------- */
-#invest .back-btn {
-  margin-top: -8px;
-  margin-bottom: -8px;
-}
-
 #invest .detail-head {
-  display: flex;
-  align-items: center;
   gap: var(--space-3);
 }
 
+#invest .back-icon {
+  box-shadow: none;
+  background: transparent;
+  margin-left: -10px;
+}
+
+#invest .detail-name {
+  min-width: 0;
+}
+
 #invest .mark-lg {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  font-size: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  font-size: 13px;
 }
 
 #invest .detail-title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   line-height: 1.15;
 }
 
@@ -80,8 +79,9 @@
 }
 
 #invest .detail-price-value {
-  font: 700 30px/1.1 var(--font-display);
+  font: 800 30px/1.1 var(--font-display);
   letter-spacing: -0.02em;
+  color: var(--navy);
 }
 
 #invest .detail-change {
@@ -96,18 +96,34 @@
   margin: var(--space-1) 0;
 }
 
-#invest .position {
+#invest .detail-chart.up {
+  color: var(--gain);
+}
+
+#invest .detail-chart.down {
+  color: var(--loss);
+}
+
+#invest .position,
+#invest .buy-box {
   display: grid;
   gap: var(--space-3);
 }
 
-#invest .detail-cta {
-  display: grid;
-  gap: var(--space-2);
+#invest .qty-cost {
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Estimate line inside the buy sheet (the sheet renders outside #invest) */
-.estimate {
-  font-size: 14px;
-  color: var(--muted);
+#invest .buy-box .hint {
+  text-align: center;
+  margin-top: -8px;
+}
+
+/* Purchase success illustration (in the sheet) */
+.success-illustration {
+  width: 62%;
+  max-width: 220px;
+  margin: 0 auto var(--space-2);
 }
