@@ -1,0 +1,228 @@
+/* Identity verification (simulated). Shown inside the onboarding layer
+   (after sign-up, or full-screen from Profile and Home). */
+
+.kyc {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-8);
+}
+
+.kyc .back-btn {
+  margin-bottom: -8px;
+}
+
+.kyc-title {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.kyc-title:focus {
+  outline: none;
+}
+
+.kyc-sim {
+  justify-self: start;
+  margin-top: -8px;
+}
+
+.kyc-art {
+  justify-self: center;
+  width: 180px;
+  height: auto;
+}
+
+/* Progress: "Step 2 of 3" and three segments */
+.kyc-progress {
+  display: grid;
+  gap: 6px;
+}
+
+.kyc-step-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.kyc-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.kyc-bar span {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+}
+
+.kyc-bar span.is-done {
+  background: var(--navy);
+}
+
+/* Document choice */
+.kyc-choices {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.kyc-choices legend {
+  margin-bottom: var(--space-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kyc-choice {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.kyc-choice:has(input:checked) {
+  border-color: var(--navy);
+  background: var(--info-tint);
+}
+
+.kyc-choice input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--navy);
+}
+
+.kyc-choice-art,
+.kyc-task-art {
+  display: grid;
+  width: 48px;
+  color: var(--navy);
+}
+
+.kyc-choice-text,
+.kyc-task-text {
+  display: grid;
+  min-width: 0;
+}
+
+.kyc-choice-label,
+.kyc-task-title {
+  font-weight: 600;
+}
+
+.kyc-choice-hint,
+.kyc-task-hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Sample photo tasks */
+.kyc-tasks {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kyc-task {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.kyc-task-btn,
+.kyc-task-done {
+  grid-column: 1 / -1;
+}
+
+.kyc-task-btn {
+  min-height: 44px;
+}
+
+.kyc-task.is-done {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.kyc-task.is-done .kyc-task-done {
+  grid-column: auto;
+  color: var(--gain);
+}
+
+/* Review tracker */
+.kyc-track {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  list-style: none;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.kyc-track-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.kyc-track-item.is-done,
+.kyc-track-item.is-current {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.kyc-track-dot {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  color: #FFFFFF;
+}
+
+.kyc-track-item.is-done .kyc-track-dot {
+  border-color: var(--gain);
+  background: var(--gain);
+}
+
+.kyc-track-item.is-current .kyc-track-dot {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.kyc-track-dot .spinner {
+  width: 14px;
+  height: 14px;
+}
+
+.kyc-actions {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* Identity verification illustration (step 1 and the verified result) */
+.kyc-illustration {
+  max-height: 200px;
+  aspect-ratio: auto;
+  object-fit: cover;
+}
