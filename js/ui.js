@@ -307,71 +307,30 @@
   };
 
   // ---------- Illustrations (pictures listed in js/illustrations.js) ----------
-  // banner: crop to a 16:10 strip for the top of a screen. Decorative (empty alt).
+  // banner: shows the picture small and whole inside a compact cream frame
+  // (fixed height, never cropped). className goes on the frame. Decorative (empty alt).
   UI.illustration = (key, { banner = false, className = '' } = {}) => {
     const item = (window.ILLUSTRATIONS || {})[key];
     if (!item) return '';
-    return `<img class="illustration${banner ? ' is-banner' : ''}${className ? ` ${className}` : ''}" src="${UI.esc(item.src)}"
-      width="${item.width}" height="${item.height}" alt="" decoding="async">`;
+    const img = `<img class="illustration" src="${UI.esc(item.src)}" width="${item.width}" height="${item.height}" alt="" decoding="async">`;
+    if (!banner) return className ? img.replace('class="illustration"', `class="illustration ${className}"`) : img;
+    return `<div class="illustration-frame${className ? ` ${className}` : ''}" aria-hidden="true">${img}</div>`;
   };
 
-  // ---------- People illustrations (warm, community style; flat SVG) ----------
-  const SKIN = ['#8D5524', '#6B3E26', '#A0663D', '#5A3420', '#7A4A2A'];
-  const CLOTHES = ['#13355A', '#1F8A5B', '#E2802A', '#2F5D8A', '#B85F12'];
-  const WRAPS = ['#E2802A', '#1F8A5B', '#F2C14E', '#13355A'];
-  const HAIR = '#22160F';
-
-  // One person: shoulders, neck, head, and hair or a headwrap
-  function person(x, y, s, i, opts = {}) {
-    const skin = SKIN[i % SKIN.length];
-    const shirt = CLOTHES[(i + (opts.shift || 0)) % CLOTHES.length];
-    const wrap = i % 2 === 0;
-    return `<g transform="translate(${x} ${y}) scale(${s})">
-      <path d="M-24 46 C-24 22 -14 16 0 16 C14 16 24 22 24 46 Z" fill="${shirt}"/>
-      <rect x="-5" y="6" width="10" height="12" rx="4" fill="${skin}"/>
-      <ellipse cx="0" cy="-4" rx="12" ry="13.5" fill="${skin}"/>
-      ${
-        wrap
-          ? `<path d="M-13 -6 C-13 -24 13 -24 13 -6 C9 -12 -9 -12 -13 -6 Z" fill="${WRAPS[i % WRAPS.length]}"/><circle cx="9" cy="-19" r="5" fill="${WRAPS[i % WRAPS.length]}"/>`
-          : `<path d="M-12.5 -5 C-14 -20 14 -21 12.5 -5 C10 -12 -9 -13 -12.5 -5 Z" fill="${HAIR}"/>`
-      }
-      <circle cx="-4.5" cy="-3" r="1.4" fill="${HAIR}"/><circle cx="4.5" cy="-3" r="1.4" fill="${HAIR}"/>
-      <path d="M-4 4 Q0 7 4 4" fill="none" stroke="${HAIR}" stroke-width="1.4" stroke-linecap="round"/>
-    </g>`;
-  }
-
-  // variant: 'welcome' (scene with sun and hills), 'group' (4 people), 'pair' (2 people)
-  UI.peopleArt = (variant = 'group') => {
-    if (variant === 'welcome') {
-      return `<svg class="people-art people-welcome" viewBox="0 0 320 200" aria-hidden="true" focusable="false">
-        <circle cx="262" cy="58" r="34" fill="#F2B36B"/>
-        <path d="M0 132 C60 96 110 104 160 122 C210 140 260 104 320 114 V200 H0 Z" fill="#B9D7B0"/>
-        <path d="M0 152 C70 128 140 140 200 150 C250 158 290 140 320 144 V200 H0 Z" fill="#7FB38A"/>
-        ${person(98, 128, 1.45, 1, { shift: 1 })}
-        ${person(222, 128, 1.45, 3, { shift: 2 })}
-        ${person(160, 140, 1.6, 0)}
-        <rect x="149" y="176" width="22" height="14" rx="3" fill="#13355A"/>
-      </svg>`;
-    }
-    const n = variant === 'pair' ? 2 : 4;
-    const w = variant === 'pair' ? 110 : 190;
-    const people = Array.from({ length: n }, (_, i) => person(28 + i * ((w - 56) / (n - 1)), 44 + (i % 2) * 6, 0.95, i + 1, { shift: i })).join('');
-    return `<svg class="people-art people-${variant}" viewBox="0 0 ${w} 96" aria-hidden="true" focusable="false">
-      <ellipse cx="${w / 2}" cy="92" rx="${w / 2 - 6}" ry="6" fill="#000" opacity="0.06"/>${people}</svg>`;
+  // ---------- Avatars (initials) ----------
+  // "Jean Mugisha" → "JM"; one name → one letter. Decorative: the name is
+  // always written next to it. Same component everywhere (Profile, Our Circle).
+  UI.initials = (name) => {
+    const words = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return '?';
+    const first = Array.from(words[0])[0];
+    const last = words.length > 1 ? Array.from(words[words.length - 1])[0] : '';
+    return (first + last).toLocaleUpperCase();
   };
 
-  // Illustrated avatar for a member (stable look per name); "you" gets a navy ring
-  UI.avatar = (name, { you = false, size = 44 } = {}) => {
-    let h = 0;
-    for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-    const i = h % 5;
-    return `<svg class="avatar-art${you ? ' is-you' : ''}" width="${size}" height="${size}" viewBox="-30 -30 60 60" aria-hidden="true" focusable="false">
-      <circle r="29" fill="${['#FCEEDF', '#E3F3EB', '#E7EEF6', '#F6E3D3', '#EAF1E2'][i]}"/>
-      <clipPath id="av-${h}"><circle r="29"/></clipPath>
-      <g clip-path="url(#av-${h})">${person(0, 6, 1, i)}</g>
-      ${you ? '<circle r="28" fill="none" stroke="#13355A" stroke-width="2.5"/>' : ''}
-    </svg>`;
-  };
+  // you: adds a thin navy ring for the person using the app
+  UI.avatar = (name, { you = false, size = 44 } = {}) =>
+    `<span class="avatar${you ? ' is-you' : ''}" style="--avatar-size:${size}px" aria-hidden="true">${UI.esc(UI.initials(name))}</span>`;
 
   // ---------- Donut chart (decorative; always show a text legend beside it) ----------
   UI.donut = (segments, { size = 120, thickness = 18 } = {}) => {
