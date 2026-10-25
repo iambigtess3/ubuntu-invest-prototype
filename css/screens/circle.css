@@ -362,3 +362,181 @@
 .warn-list strong {
   font-weight: 600;
 }
+
+/* Illustration in the How it works sheet */
+.circle-art {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  justify-self: center;
+}
+
+/* ---------- Design B ---------- */
+
+/* Circle value card: warm background with the group illustration */
+#circle .circle-value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 116px;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--cream);
+  border-color: #F1E3CF;
+}
+
+#circle .circle-value-text {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  min-width: 0;
+}
+
+#circle .circle-value-label {
+  font: 500 14px/1.3 var(--font-body);
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+#circle .circle-value-amount {
+  font: 800 26px/1.15 var(--font-display);
+  letter-spacing: -0.02em;
+  color: var(--navy);
+}
+
+#circle .circle-value-note {
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+@container screen (max-width: 290px) {
+  #circle .circle-value {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #circle .circle-value-art {
+    max-width: 180px;
+  }
+}
+
+#circle .circle-panel {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Your share (opens your own share sheet) */
+#circle .your-share {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-2);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+#circle .your-share-text {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  min-width: 0;
+}
+
+#circle .your-share-label {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+#circle .your-share-value {
+  font: 800 21px/1.2 var(--font-display);
+  color: var(--navy);
+}
+
+#circle .your-share-meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Breakdown: donut plus a text legend (the legend carries the numbers) */
+#circle .breakdown-card {
+  display: grid;
+  gap: var(--space-3);
+}
+
+#circle .breakdown-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-4);
+}
+
+@container screen (max-width: 280px) {
+  #circle .breakdown-body {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+}
+
+#circle .breakdown-legend {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#circle .breakdown-legend li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-2);
+  font-size: 13.5px;
+}
+
+#circle .breakdown-legend strong {
+  grid-column: 2;
+  font-weight: 600;
+}
+
+#circle .legend-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+}
+
+/* Member rows use illustrated avatars */
+#circle .member-avatar {
+  display: grid;
+}
+
+/* ---------- Design C ---------- */
+#circle .circle-banner {
+  aspect-ratio: 16 / 11;
+}
+
+#circle .circle-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+  color: var(--navy);
+}
+
+#circle .stats dd {
+  margin: 0;
+}
+
+#circle .stats .change {
+  justify-content: center;
+}
+
+/* Pending withdrawal sheet heading */
+.sheet .result-title {
+  text-align: center;
+}
