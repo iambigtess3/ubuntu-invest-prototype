@@ -45,3 +45,91 @@
   letter-spacing: 0;
   color: var(--muted);
 }
+
+/* ---------- Language picker (sheet) ---------- */
+.lang-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lang-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.lang-option:has(input:checked) {
+  border-color: var(--navy);
+  background: var(--info-tint);
+}
+
+.lang-option input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--navy);
+}
+
+.lang-name {
+  font-weight: 600;
+}
+
+.lang-en {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---------- Design B ---------- */
+#profile .profile-head {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+#profile .profile-head .avatar-art {
+  margin-bottom: var(--space-2);
+}
+
+#profile .profile-name {
+  font: 800 21px/1.2 var(--font-display);
+  color: var(--navy);
+}
+
+#profile .profile-head .tag {
+  margin-top: 6px;
+}
+
+#profile .row-end-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--line-strong);
+}
+
+#profile .row-end-inline .row-meta {
+  color: var(--muted);
+}
+
+#profile .row > .icon {
+  color: var(--line-strong);
+}
+
+/* Reset and Log out: tinted so they read as consequential */
+#profile .list-danger {
+  background: #FFF7F5;
+  border: 1px solid #F6D8D3;
+}
+
+#profile .list-danger .row-title {
+  color: var(--loss);
+}
