@@ -12,7 +12,7 @@
 window.BRAND = {
   name: 'Ubuntu Invest',
   logo: {
-    src: 'assets/logo-mark.svg',
+    src: 'assets/illustrations/logo.png',
     includesName: false,
     aspect: 1,
   },
