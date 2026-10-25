@@ -287,3 +287,38 @@
   font-size: 13px;
   color: var(--muted);
 }
+
+/* ---------- Design C: welcome ---------- */
+.ob-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.ob-welcome .ob-title {
+  font-weight: 700;
+  font-size: 34px;
+  color: var(--green-strong);
+}
+
+.ob-scene {
+  background: transparent;
+}
+
+
+/* Longer translations of "Skip" wrap instead of widening the screen */
+.ob-welcome > * {
+  min-width: 0;
+}
+
+.ob-top {
+  flex-wrap: wrap;
+}
+
+.ob-top .link-btn {
+  min-width: 0;
+  margin-left: auto;
+  text-align: right;
+  line-height: 1.25;
+}

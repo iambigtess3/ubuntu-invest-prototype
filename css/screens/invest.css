@@ -121,9 +121,8 @@
   margin-top: -8px;
 }
 
-/* Purchase success illustration (in the sheet) */
-.success-illustration {
-  width: 62%;
-  max-width: 220px;
-  margin: 0 auto var(--space-2);
+/* Purchase success illustration (in the sheet): the shared compact frame */
+.success-frame {
+  width: 100%;
+  margin-bottom: var(--space-2);
 }

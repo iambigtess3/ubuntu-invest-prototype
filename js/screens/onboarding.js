@@ -22,13 +22,15 @@
     current = stepWelcome;
     layer.innerHTML = `
       <div class="ob-welcome">
-        <div class="ob-brand">${UI.logo({ size: 36 })}</div>
+        <div class="ob-top">
+          ${UI.logo({ size: 32 })}
+          <button type="button" class="link-btn" data-ob="skip">${t('ob.skip')}</button>
+        </div>
         <h1 class="ob-title" tabindex="-1">${t('ob.headline')}</h1>
         <p class="ob-lede">${t('ob.lede')}</p>
-        <div class="ob-scene">${UI.peopleArt('welcome')}</div>
+        <div class="ob-scene">${UI.illustration('welcome', { banner: true })}</div>
         <div class="ob-actions">
           <button type="button" class="btn btn-primary btn-block" data-ob="start">${t('ob.getStarted')}${UI.icon('chevronRight', { size: 20 })}</button>
-          <button type="button" class="btn btn-quiet btn-block" data-ob="skip">${t('ob.skip')}</button>
         </div>
         <p class="ob-note">${t('ob.note')}</p>
       </div>`;

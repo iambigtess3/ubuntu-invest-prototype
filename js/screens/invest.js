@@ -318,7 +318,7 @@ Screens.invest = function (el) {
       sheet.setTitle(t('buy.placedTitle'));
       sheet.body.innerHTML = `
         <div class="result">
-          ${UI.illustration('purchaseSuccess', { className: 'success-illustration' })}
+          ${UI.illustration('purchaseSuccess', { banner: true, className: 'success-frame' })}
           <h3 class="result-title">${t('buy.successTitle')}</h3>
           <p class="muted">${t('buy.placedBody', { shares: sharesLabel(qty), company: UI.esc(c.name), amount: UI.rwf(cost) })}</p>
         </div>
