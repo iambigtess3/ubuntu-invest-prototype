@@ -10,7 +10,10 @@
 // The pictures are decorative: what they show is always said in the text too.
 
 window.ILLUSTRATIONS = {
-  welcome: { src: 'assets/illustrations/lynk-spiral.webp', width: 720, height: 628 }, // LYNK welcome: one seamless repeat of the glass spiral (tiles vertically)
+  // LYNK welcome: exactly 4 seamless repeats of the glass spiral stacked in one
+  // image (the welcome page moves it up by one repeat in a loop). If you change
+  // this path, change the matching preload line in index.html too.
+  welcome: { src: 'assets/illustrations/lynk-spiral-loop.webp', width: 720, height: 2512 },
   circle: { src: 'assets/illustrations/circle-network.png', width: 600, height: 547 },
   kyc: { src: 'assets/illustrations/verified_id.png', width: 600, height: 514 },
   learn: { src: 'assets/illustrations/learn-growth.png', width: 640, height: 587 },
