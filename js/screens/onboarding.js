@@ -18,21 +18,45 @@
 
 
   // ---------- Steps ----------
+  // Step 1: LYNK welcome. Full-screen forest with the glass spiral (picture set in
+  // js/illustrations.js → welcome); motion and colours live in css/screens/onboarding.css.
   function stepWelcome() {
     current = stepWelcome;
+    const art = (window.ILLUSTRATIONS || {}).welcome || { src: '', width: 720, height: 628 };
+    // The picture is one seamless repeat of the spiral; it's tiled and moved up by
+    // exactly one repeat in a loop, so the helix appears to turn endlessly.
+    const flow = `background-image: url('${UI.esc(art.src)}'); aspect-ratio: ${art.width} / ${art.height * 5};`;
     layer.innerHTML = `
       <div class="ob-welcome">
-        <div class="ob-top">
-          ${UI.logo({ size: 32 })}
-          <button type="button" class="link-btn" data-ob="skip">${t('ob.skip')}</button>
+        <div class="lw-bg" aria-hidden="true">
+          <div class="lw-glow"></div>
+          <div class="lw-spiral">
+            <div class="lw-spiral-inner">
+              <div class="lw-flow" style="${flow}"></div>
+              <div class="lw-sheen"><div class="lw-flow" style="${flow}"></div></div>
+            </div>
+          </div>
+          <div class="lw-shade"></div>
         </div>
-        <h1 class="ob-title" tabindex="-1">${t('ob.headline')}</h1>
-        <p class="ob-lede">${t('ob.lede')}</p>
-        <div class="ob-scene">${UI.illustration('welcome', { banner: true })}</div>
-        <div class="ob-actions">
-          <button type="button" class="btn btn-primary btn-block" data-ob="start">${t('ob.getStarted')}${UI.icon('chevronRight', { size: 20 })}</button>
+
+        <div class="lw-top">
+          ${UI.logo({ size: 30 })}
+          <button type="button" class="lw-skip" data-ob="skip">${t('ob.skip')}</button>
         </div>
-        <p class="ob-note">${t('ob.note')}</p>
+
+        <div class="lw-center">
+          <h1 class="ob-title lw-title" tabindex="-1">${t('ob.headline')}</h1>
+          <p class="lw-lede">${t('ob.lede')}</p>
+          <span class="lw-tag">${t('common.simulated')}</span>
+        </div>
+
+        <div class="lw-bottom">
+          <button type="button" class="lw-cta" data-ob="start">
+            <span>${t('ob.getStarted')}</span>
+            <span class="lw-cta-arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>
+          </button>
+          <p class="lw-note">${t('ob.note')}</p>
+        </div>
       </div>`;
     layer.scrollTop = 0;
     layer.querySelector('.ob-title').focus({ preventScroll: true });
