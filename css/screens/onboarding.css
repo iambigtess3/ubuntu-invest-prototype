@@ -283,40 +283,50 @@
   animation: lw-breathe 8s ease-in-out infinite;
 }
 
-/* The spiral: fills the screen and sways gently in perspective */
+/* The spiral: fills the screen, in its final position from the first frame.
+   It fades in gently once its picture has loaded (the .is-ready class). */
 .lw-spiral {
   position: absolute;
   inset: 0;
-  perspective: 900px;
-  animation: lw-unfold 1.6s var(--lw-ease) both;
+  perspective: 1000px;
+  opacity: 0;
+  transition: opacity 0.9s ease-out;
 }
 
+.lw-spiral.is-ready {
+  opacity: 1;
+}
+
+/* Slow 3D sway. It starts straight (no jump) and tilts only a few degrees. */
 .lw-spiral-inner {
   position: absolute;
   inset: 0 -6%;
   transform-style: preserve-3d;
-  animation: lw-sway 14s ease-in-out 1.6s infinite;
+  animation: lw-sway 22s ease-in-out infinite;
 }
 
-/* Five stacked repeats of the spiral, moved up by exactly one repeat (20%)
-   in a loop: the helix appears to turn and rise endlessly, with no jump */
+/* The stacked spiral (4 repeats), moved up by exactly one repeat (25%) at a
+   steady speed and looped, so the helix rises endlessly with no jump. */
 .lw-flow {
   position: absolute;
   top: 0;
   left: 0;
+  display: block;
   width: 100%;
-  background-repeat: repeat-y;
-  background-size: 100% 20%;
+  height: auto;
+  backface-visibility: hidden;
   will-change: transform;
-  animation: lw-flow 9s linear infinite;
+  animation: lw-flow 18s linear infinite;
 }
 
-/* Mint light sweeping along the glass: a mint-tinted copy of the moving spiral,
-   revealed by a travelling gradient (works even when index.html is opened as a file) */
+/* Soft mint light along the glass: a mint-tinted copy of the moving spiral,
+   revealed by a slowly travelling gradient. It starts hidden and runs from the
+   beginning, so nothing switches on mid-entrance. */
 .lw-sheen {
   position: absolute;
   inset: 0;
-  filter: grayscale(1) brightness(1.7) sepia(1) hue-rotate(105deg) saturate(2.6);
+  opacity: 0.55;
+  filter: grayscale(1) brightness(1.6) sepia(1) hue-rotate(105deg) saturate(2.4);
   mix-blend-mode: screen;
   -webkit-mask-image: linear-gradient(160deg, transparent 0%, transparent 40%, #000 50%, transparent 60%, transparent 100%);
   mask-image: linear-gradient(160deg, transparent 0%, transparent 40%, #000 50%, transparent 60%, transparent 100%);
@@ -326,7 +336,7 @@
   mask-repeat: no-repeat;
   -webkit-mask-position: 0 100%;
   mask-position: 0 100%;
-  animation: lw-sheen 6.5s ease-in-out 1.8s infinite;
+  animation: lw-sheen 9s ease-in-out infinite;
 }
 
 /* Darker areas so the text always reads clearly over the glass */
@@ -390,7 +400,7 @@
   color: #FFFFFF;
   text-wrap: balance;
   text-shadow: 0 2px 24px rgba(7, 42, 32, 0.6);
-  animation: lw-focus 1.3s var(--lw-ease) 0.25s both;
+  animation: lw-rise 0.9s var(--lw-ease) 0.15s both;
 }
 
 .lw-lede {
@@ -484,36 +494,10 @@
 }
 
 /* ---------- Motion ---------- */
-@keyframes lw-unfold {
-  from {
-    opacity: 0;
-    filter: blur(18px);
-    transform: scale(1.14);
-  }
-  to {
-    opacity: 1;
-    filter: blur(0);
-    transform: none;
-  }
-}
-
-@keyframes lw-focus {
-  from {
-    opacity: 0;
-    filter: blur(14px);
-    transform: translateY(14px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    filter: blur(0);
-    transform: none;
-  }
-}
-
 @keyframes lw-rise {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -530,10 +514,13 @@
 @keyframes lw-sway {
   0%,
   100% {
-    transform: rotateY(-10deg) rotateZ(-2.5deg) scale(1);
+    transform: rotateY(0deg) rotateZ(0deg);
   }
-  50% {
-    transform: rotateY(10deg) rotateZ(2deg) scale(1.05);
+  25% {
+    transform: rotateY(6deg) rotateZ(1deg);
+  }
+  75% {
+    transform: rotateY(-6deg) rotateZ(-1deg);
   }
 }
 
@@ -542,7 +529,7 @@
     transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translate3d(0, -20%, 0);
+    transform: translate3d(0, -25%, 0); /* one repeat of the four in the image */
   }
 }
 
