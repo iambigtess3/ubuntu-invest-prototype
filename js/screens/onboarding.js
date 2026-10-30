@@ -22,18 +22,19 @@
   // js/illustrations.js → welcome); motion and colours live in css/screens/onboarding.css.
   function stepWelcome() {
     current = stepWelcome;
-    const art = (window.ILLUSTRATIONS || {}).welcome || { src: '', width: 720, height: 628 };
-    // The picture is one seamless repeat of the spiral; it's tiled and moved up by
-    // exactly one repeat in a loop, so the helix appears to turn endlessly.
-    const flow = `background-image: url('${UI.esc(art.src)}'); aspect-ratio: ${art.width} / ${art.height * 5};`;
+    const art = (window.ILLUSTRATIONS || {}).welcome || { src: '', width: 720, height: 2512 };
+    // The picture is 4 seamless repeats of the spiral in one image; the CSS moves
+    // it up by exactly one repeat in a loop, so the helix turns endlessly.
+    const img = (extra = '') =>
+      `<img class="lw-flow"${extra} src="${UI.esc(art.src)}" width="${art.width}" height="${art.height}" alt="" decoding="async">`;
     layer.innerHTML = `
       <div class="ob-welcome">
         <div class="lw-bg" aria-hidden="true">
           <div class="lw-glow"></div>
           <div class="lw-spiral">
             <div class="lw-spiral-inner">
-              <div class="lw-flow" style="${flow}"></div>
-              <div class="lw-sheen"><div class="lw-flow" style="${flow}"></div></div>
+              ${img(' fetchpriority="high"')}
+              <div class="lw-sheen">${img()}</div>
             </div>
           </div>
           <div class="lw-shade"></div>
@@ -58,6 +59,22 @@
           <p class="lw-note">${t('ob.note')}</p>
         </div>
       </div>`;
+
+    // Fade the spiral in only once its picture is decoded and ready to paint, so the
+    // fade always runs on a visible image (no pop-in). It's preloaded in index.html,
+    // so this is usually immediate. The fallback only matters if loading stalls.
+    const spiral = layer.querySelector('.lw-spiral');
+    const first = spiral.querySelector('.lw-flow');
+    let shown = false;
+    const show = () => {
+      if (shown) return;
+      shown = true;
+      requestAnimationFrame(() => spiral.classList.add('is-ready'));
+    };
+    const ready = first.decode ? first.decode() : new Promise((resolve) => (first.complete ? resolve() : first.addEventListener('load', resolve, { once: true })));
+    ready.then(show, show);
+    setTimeout(show, 4000);
+
     layer.scrollTop = 0;
     layer.querySelector('.ob-title').focus({ preventScroll: true });
   }
